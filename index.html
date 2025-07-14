@@ -259,8 +259,8 @@
             </div>
 
             <!-- Purchase Form -->
-            <!-- UPDATED: Form action and Stripe link updated -->
-            <form action="https://formspree.io/f/xzzglvrz" method="POST" class="space-y-4 text-left">
+            <!-- UPDATED: Added id="contact-form" to the form -->
+            <form id="contact-form" action="https://formspree.io/f/xzzglvrz" method="POST" class="space-y-4 text-left">
                <input type="hidden" name="_next" value="https://buy.stripe.com/aFa7sKeoB6M0aSb7mBbbG0d">
                <p class="text-center text-slate-300 font-semibold text-lg mb-4">Get started now - we'll deliver your report within 3 business days:</p>
 
@@ -398,6 +398,50 @@
          <p class="mt-2 text-xs">Results may vary. This is not a guarantee of rankings or traffic.</p>
       </div>
    </footer>
+
+   <!-- ADDED: JavaScript to handle form submission and redirect -->
+   <script>
+      const form = document.getElementById('contact-form');
+      const submissionStatus = document.createElement('div'); // Create a status message element
+      form.parentNode.insertBefore(submissionStatus, form.nextSibling);
+
+      form.addEventListener('submit', async function(event) {
+         event.preventDefault(); // Stop the default browser submission
+
+         const submitButton = form.querySelector('button[type="submit"]');
+         const originalButtonText = submitButton.innerHTML;
+         submitButton.innerHTML = 'Submitting...';
+         submitButton.disabled = true;
+
+         const formData = new FormData(form);
+         const stripeUrl = form.querySelector('input[name="_next"]').value;
+
+         try {
+            const response = await fetch(form.action, {
+               method: form.method,
+               body: formData,
+               headers: {
+                  'Accept': 'application/json'
+               }
+            });
+
+            if (response.ok) {
+               // Submission was successful, now redirect to Stripe
+               window.location.href = stripeUrl;
+            } else {
+               // Handle server errors from Formspree
+               submissionStatus.innerHTML = '<p class="text-red-400 text-center mt-4">There was a problem with your submission. Please try again.</p>';
+               submitButton.innerHTML = originalButtonText;
+               submitButton.disabled = false;
+            }
+         } catch (error) {
+            // Handle network errors
+            submissionStatus.innerHTML = '<p class="text-red-400 text-center mt-4">A network error occurred. Please check your connection and try again.</p>';
+            submitButton.innerHTML = originalButtonText;
+            submitButton.disabled = false;
+         }
+      });
+   </script>
 
 </body>
 
