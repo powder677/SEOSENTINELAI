@@ -282,6 +282,7 @@ function AuditPage({ reportData, businessName, onGetFullPlan }) {
 // --- Onboarding Page Component (The New Final Page) ---
 function OnboardingPage({ businessName, onStartOver }) {
     const [includeAddon, setIncludeAddon] = useState(false);
+    const [onboardingData, setOnboardingData] = useState({ name: '', email: '' });
 
     // Define the checkout URLs
     const baseCheckoutUrl = "https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i";
@@ -289,6 +290,17 @@ function OnboardingPage({ businessName, onStartOver }) {
 
     // Determine the current checkout URL based on the addon selection
     const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setOnboardingData(prev => ({...prev, [name]: value}));
+    };
+
+    const handleCheckout = (e) => {
+        e.preventDefault();
+        // This will now redirect the user to the appropriate Stripe checkout page
+        window.location.href = checkoutUrl;
+    };
 
     const deliverables = [
         { week: 1, icon: "📸", action: "Photo Strategy Launch", description: "5 custom photo prompts tailored to your practice. Use your own shots or let us enhance with AI-generated imagery." },
@@ -332,7 +344,16 @@ function OnboardingPage({ businessName, onStartOver }) {
             {/* Onboarding & Checkout Section */}
             <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
                  <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Let’s Get Started</h2>
-                 <div className="max-w-lg mx-auto space-y-6">
+                 <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
+                     <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
+                        <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                     </div>
+                     <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Best Email for Updates</label>
+                        <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="you@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                     </div>
+
                      <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
                         <div className="flex h-6 items-center">
                             <input
@@ -353,14 +374,12 @@ function OnboardingPage({ businessName, onStartOver }) {
                     </div>
 
                     <div className="text-center pt-4">
-                        <a 
-                            href={checkoutUrl}
-                            className="block w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30"
-                        >
-                            👉 Start My Optimization Plan – ${30 + (includeAddon ? 10 : 0)}/month
-                        </a>
+                        <p className="font-bold text-white text-lg mb-2">🔐 Start Your 30-Day Optimization — Just ${30 + (includeAddon ? 10 : 0)}/mo</p>
+                         <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
+                            👉 Start My Optimization Plan
+                        </button>
                     </div>
-                 </div>
+                 </form>
                  <div className="text-center mt-6">
                      <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we’ll send a quick onboarding form to link your GMB. Your photo prompts and first posts begin within 48 hours.</p>
                  </div>
@@ -378,5 +397,7 @@ function OnboardingPage({ businessName, onStartOver }) {
         </div>
     );
 }
+
+export default App;
 
 export default App;
