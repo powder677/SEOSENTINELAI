@@ -66,40 +66,37 @@ export default async function handler(req, res) {
     }
     console.log('Client GMB data:', clientGmbData); // DEBUG
 
-    // --- Step 4b: Find up to 3 nearby competitors ---
-    // Try multiple search approaches
-    const searchTerms = [
-        formData.businessType,
-        'barber shop',
-        'hair salon',
-        'barbershop'
-    ];
+// --- Step 4b: Find up to 3 nearby competitors (tight radius + category filtering) ---
 
-    let allCompetitors = [];
-    
-    for (const searchTerm of searchTerms) {
-        const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=8000&keyword=${encodeURIComponent(searchTerm)}&key=${placesApiKey}`;
-        console.log(`Nearby search URL for "${searchTerm}":`, nearbyUrl); // DEBUG
-        
-        const nearbyResponse = await fetch(nearbyUrl).then(res => res.json());
-        console.log(`Nearby search response for "${searchTerm}":`, nearbyResponse); // DEBUG
-        
-        if (nearbyResponse.status === 'OK' && nearbyResponse.results.length > 0) {
-            // Filter out the client's own business and add to competitors
-            const newCompetitors = nearbyResponse.results
-                .filter(place => 
-                    place.name.toLowerCase() !== formData.businessName.toLowerCase() &&
-                    !allCompetitors.some(existing => existing.place_id === place.place_id)
-                );
-            allCompetitors.push(...newCompetitors);
-        }
-        
-        // Break if we have enough competitors
-        if (allCompetitors.length >= 5) break;
-    }
+let allCompetitors = [];
 
-    debugInfo.nearbySearch = { totalFound: allCompetitors.length }; // DEBUG
-    console.log(`Total unique competitors found: ${allCompetitors.length}`); // DEBUG
+// Use the most relevant client category if available
+const baseSearchTerm = clientGmbData.categories[0] || formData.businessType;
+const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=5000&keyword=${encodeURIComponent(baseSearchTerm)}&key=${placesApiKey}`;
+console.log('Nearby search URL:', nearbyUrl); // DEBUG
+
+const nearbyResponse = await fetch(nearbyUrl).then(res => res.json());
+console.log('Nearby search response:', nearbyResponse); // DEBUG
+
+if (nearbyResponse.status === 'OK' && nearbyResponse.results.length > 0) {
+    // Filter and deduplicate
+    allCompetitors = nearbyResponse.results
+        .filter(place =>
+            place.name.toLowerCase() !== formData.businessName.toLowerCase() &&
+            place.business_status === 'OPERATIONAL' &&
+            !place.name.toLowerCase().includes('target') &&
+            !place.name.toLowerCase().includes('walmart') &&
+            !place.name.toLowerCase().includes('costco') &&
+            !place.name.toLowerCase().includes('amazon') &&
+            place.user_ratings_total > 10
+        )
+        .sort((a, b) => b.user_ratings_total - a.user_ratings_total) // Rank by number of reviews
+        .slice(0, 3); // Limit to 3 competitors
+}
+
+debugInfo.nearbySearch = { totalFound: allCompetitors.length }; // DEBUG
+console.log(`Total filtered competitors: ${allCompetitors.length}`); // DEBUG
+
 
     if (allCompetitors.length > 0) {
         // Take top 3 competitors
