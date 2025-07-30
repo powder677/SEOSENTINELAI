@@ -144,10 +144,10 @@ export default async function handler(req, res) {
 
         // Format this data cleanly for the prompt
         competitorDataForPrompt = `
-            Here is the competitive landscape analysis:
-            - Client's Profile: ${JSON.stringify(clientGmbData)}
-            - Top Competitors: ${JSON.stringify(competitorProfiles)}
-            - Key Opportunity Gaps: ${JSON.stringify(insights)}
+              Here is the competitive landscape analysis:
+              - Client's Profile: ${JSON.stringify(clientGmbData)}
+              - Top Competitors: ${JSON.stringify(competitorProfiles)}
+              - Key Opportunity Gaps: ${JSON.stringify(insights)}
         `;
     }
 
@@ -156,8 +156,14 @@ export default async function handler(req, res) {
 
     // 5. --- Construct the Enhanced Prompt for the AI ---
     const prompt = `
-      Analyze the following local business and generate a comprehensive Local SEO Action Plan.
-      The business details are:
+      You are a Local SEO marketing strategist creating a premium $97 audit report. The business owner is busy and skeptical — your goal is to impress them with real insights that show they are missing traffic and customers.
+
+      Analyze this business and its local competitors. Identify where this business is falling short in visibility, trust, or engagement. Suggest specific, emotional, and high-impact actions they should take. Write in persuasive, clear language — no fluff or filler.
+
+      Include emoji icons, strong phrases like "🚨 Missed Opportunity" or "📸 Photo Deficit", and highlight contrast with competitors. Use urgency but stay professional.
+
+      Based on the following data, return a JSON object (no preamble or code blocks):
+
       - Business Name: ${formData.businessName}
       - Business Type: ${formData.businessType}
       - Location: ${formData.location}
@@ -169,43 +175,37 @@ export default async function handler(req, res) {
 
       ${competitorDataForPrompt}
 
-      Based on ALL of this information, including the competitor data, perform the following analysis and return the output ONLY as a valid JSON object.
-      Do not include any introductory text, backticks, or "json" markers.
-      The JSON object must have these exact keys: "overall_score", "overall_explanation", "gmb_optimization", "competitor_analysis", "local_keyword_strategy", "content_plan".
-
-      IMPORTANT: Even if no competitor data was found, still provide meaningful analysis based on the business information provided.
-
-      The structure must be:
+      Use this exact JSON structure:
       {
         "overall_score": "A string grade like 'B+' or 'C-'.",
-        "overall_explanation": "A string explaining the score in one sentence, considering any available competitive landscape.",
+        "overall_explanation": "Explain the score in one punchy sentence, based on data and urgency.",
         "gmb_optimization": {
           "title": "GMB Profile Optimization",
           "recommendations": [
-            { "point": "A string for the specific area (e.g., 'Profile Completeness')", "action": "A string with the recommended action." }
+            { "point": "Area of improvement", "action": "Specific action" }
           ]
         },
         "competitor_analysis": {
           "title": "Competitor Snapshot & Opportunities",
-          "summary": "A one-sentence summary of the competitive landscape based on the data provided or general market insights.",
+          "summary": "Punchy summary of what's working for competitors",
           "insights": [
-            { "insight": "A string describing the opportunity", "action": "A string with the recommended action based on the insight and data." },
-            { "insight": "A string describing another opportunity", "action": "A string with another recommended action." }
+            { "insight": "Opportunity from comparison", "action": "Action to fix or compete" },
+            { "insight": "Second major gap", "action": "Action for it" }
           ]
         },
         "local_keyword_strategy": {
           "title": "Local Keyword Strategy",
           "keywords": [
-            { "keyword": "A string for the keyword phrase.", "reason": "A string explaining why this keyword is valuable." }
+            { "keyword": "Keyword Phrase", "reason": "Why this keyword matters" }
           ]
         },
         "content_plan": {
           "title": "4-Week GMB Content Plan",
           "posts": [
-            { "week": 1, "topic": "A string for the post topic.", "details": "A string with the post details." },
-            { "week": 2, "topic": "A string for the post topic.", "details": "A string with the post details." },
-            { "week": 3, "topic": "A string for the post topic.", "details": "A string with the post details." },
-            { "week": 4, "topic": "A string for the post topic.", "details": "A string with the post details." }
+            { "week": 1, "topic": "Topic", "details": "Post details" },
+            { "week": 2, "topic": "Topic", "details": "Post details" },
+            { "week": 3, "topic": "Topic", "details": "Post details" },
+            { "week": 4, "topic": "Topic", "details": "Post details" }
           ]
         }
       }
