@@ -282,37 +282,31 @@ function AuditPage({ reportData, businessName, onGetFullPlan }) {
 // --- Onboarding Page Component (The New Final Page) ---
 function OnboardingPage({ businessName, onStartOver }) {
     const [includeAddon, setIncludeAddon] = useState(false);
-    const [onboardingData, setOnboardingData] = useState({ name: '', email: '' });
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setOnboardingData(prev => ({...prev, [name]: value}));
-    };
+    // Define the checkout URLs
+    const baseCheckoutUrl = "https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i";
+    const addonCheckoutUrl = "https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h";
 
-    const handleCheckout = (e) => {
-        e.preventDefault();
-        // In a real app, you would integrate with a payment provider like Stripe
-        // and then send the onboardingData to your backend.
-        alert(`Checkout initiated for ${onboardingData.email} with add-on: ${includeAddon}. Total: $${30 + (includeAddon ? 10 : 0)}`);
-    };
+    // Determine the current checkout URL based on the addon selection
+    const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
 
     const deliverables = [
-        { week: 1, icon: "📸", action: "Photo Strategy Launch", description: "We’ll send you 5 custom photo prompts to capture + upload, or we can use AI-enhanced images." },
-        { week: 2, icon: "✍️", action: "4 GMB Posts Written & Scheduled", description: "We’ll write and queue up your GMB posts — including one based on a review/testimonial." },
-        { week: 3, icon: "⭐", action: "Review System Kickoff", description: "You'll get a printable + digital “Review Request Card” for staff to hand out, plus SMS/email copy." },
-        { week: 4, icon: "📊", action: "Competitor Positioning Report", description: "See your new ranking and how you compare. We’ll tweak the strategy if needed." },
+        { week: 1, icon: "📸", action: "Photo Strategy Launch", description: "5 custom photo prompts tailored to your practice. Use your own shots or let us enhance with AI-generated imagery." },
+        { week: 2, icon: "✍️", action: "4 GMB Posts Written & Scheduled", description: "We’ll write and schedule four engaging Google Business posts, including one built around a real patient testimonial." },
+        { week: 3, icon: "⭐", action: "Review System Kickoff", description: "Get a printable + digital “Review Request Card” for staff, plus plug-and-play SMS and email templates to boost your reviews fast." },
+        { week: 4, icon: "📊", action: "Competitor Positioning Report", description: "We’ll track your ranking and compare it to top competitors. If needed, we’ll adjust your strategy next month." },
     ];
 
     return (
         <div className="max-w-4xl mx-auto animate-fade-in">
             <div className="text-center mb-10">
-                <h1 className="text-4xl md:text-5xl font-bold text-white">🚀 Ready to Fix This in the Next 30 Days?</h1>
-                <p className="text-xl text-slate-300 mt-4">Here's exactly what you'll get when you activate your Local SEO Optimization Plan for <span className="text-blue-400 font-bold">{businessName}</span>:</p>
+                <h1 className="text-4xl md:text-5xl font-bold text-white">🚀 Ready to Dominate Local Search in 30 Days?</h1>
+                <p className="text-xl text-slate-300 mt-4">Here’s exactly what you’ll get with your Local SEO Optimization Plan for <span className="text-blue-400 font-bold">{businessName}</span>:</p>
             </div>
 
             {/* Deliverables Section */}
             <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 mb-10">
-                <h2 className="text-2xl font-bold text-center text-blue-400 mb-6">📦 Month 1: Deliverables</h2>
+                <h2 className="text-2xl font-bold text-center text-blue-400 mb-6">📦 Month 1 Deliverables</h2>
                 <div className="space-y-6">
                     {deliverables.map(item => (
                         <div key={item.week} className="flex items-start gap-4">
@@ -325,30 +319,21 @@ function OnboardingPage({ businessName, onStartOver }) {
                     ))}
                 </div>
                 <div className="mt-8 pt-6 border-t border-slate-700">
-                    <h3 className="text-xl font-bold text-center text-blue-400 mb-4">🔁 Every Month After:</h3>
+                    <h3 className="text-xl font-bold text-center text-blue-400 mb-4">🔁 What You'll Get Every Month After:</h3>
                     <div className="grid grid-cols-2 gap-4 text-center text-slate-300">
-                        <p>4 new GMB posts</p>
-                        <p>Monthly competitor tracking</p>
-                        <p>Photo content review</p>
-                        <p>Review system feedback</p>
+                        <p>4 brand-new GMB posts</p>
+                        <p>Competitor tracking & insights</p>
+                        <p>Updated photo strategy review</p>
+                        <p>Review system performance feedback</p>
                     </div>
                 </div>
             </div>
             
-            {/* Onboarding & Checkout Form */}
+            {/* Onboarding & Checkout Section */}
             <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
-                 <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Let's Get Started</h2>
-                 <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
-                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
-                        <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
-                     </div>
-                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Best Email for Updates</label>
-                        <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="you@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
-                     </div>
-
-                     <div className="relative flex items-start">
+                 <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Let’s Get Started</h2>
+                 <div className="max-w-lg mx-auto space-y-6">
+                     <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
                         <div className="flex h-6 items-center">
                             <input
                                 id="addon"
@@ -361,20 +346,23 @@ function OnboardingPage({ businessName, onStartOver }) {
                         </div>
                         <div className="ml-3 text-sm leading-6">
                             <label htmlFor="addon" className="font-medium text-slate-200">
-                                Add Review Response Management for +$10/mo
+                                Add Review Response Management (+$10/mo)
                             </label>
-                            <p className="text-slate-400">We'll professionally respond to all new reviews on your GMB profile.</p>
+                            <p className="text-slate-400">We’ll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
                         </div>
                     </div>
 
                     <div className="text-center pt-4">
-                         <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
-                            Start My 30-Day Optimization – ${30 + (includeAddon ? 10 : 0)}/month
-                        </button>
+                        <a 
+                            href={checkoutUrl}
+                            className="block w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30"
+                        >
+                            👉 Start My Optimization Plan – ${30 + (includeAddon ? 10 : 0)}/month
+                        </a>
                     </div>
-                 </form>
+                 </div>
                  <div className="text-center mt-6">
-                     <p className="text-xs text-slate-500">You’ll receive a short onboarding form for your GMB link after payment. Posts & photo guidance begin arriving within 48 hours.</p>
+                     <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we’ll send a quick onboarding form to link your GMB. Your photo prompts and first posts begin within 48 hours.</p>
                  </div>
             </div>
 
