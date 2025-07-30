@@ -55,106 +55,28 @@ function App() {
         setError(null);
         setFormData(data);
 
-        const prompt = `
-            You are "SEO Sentinel AI" - an expert in Google Business Profile (GBP) and Apple Maps optimization. Your entire focus is on helping local businesses dominate their immediate area without needing a website.
-
-            A user has provided the following information:
-            - Business Name: ${data.businessName}
-            - Business Type: ${data.businessType}
-            - Location: ${data.location}
-            - Primary Service: ${data.primaryService}
-            - Main Goal: ${data.mainGoal}
-
-            **Your Mission:**
-            1.  **Identify Competitors:** Based on the business type and location, perform a simulated search on Google Maps and identify the top 3 real-world local competitors.
-            2.  **Analyze Competitors:** For each competitor, estimate their number of photos and reviews, and identify one major, specific weakness in their GBP strategy.
-            3.  **Generate a Domination Plan:** Create a detailed, actionable plan for the user's business focused ONLY on GBP and Apple Maps. Do NOT mention websites, blogs, backlinks, or any traditional SEO tactics. This is purely about winning on the map.
-
-            Your response MUST be a JSON object that strictly adheres to the schema provided. Do not include any text, markdown, or any characters outside of the JSON object.
-        `;
-
-        const responseSchema = {
-            type: "OBJECT",
-            properties: {
-                "executiveSummary": { "type": "STRING", "description": "1-2 sentence summary focused on the massive, untapped potential in GBP and Apple Maps for this specific business." },
-                "competitorAnalysis": {
-                    type: "OBJECT",
-                    properties: {
-                        "topCompetitors": {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    "name": { "type": "STRING" },
-                                    "estimatedPhotos": { "type": "NUMBER" },
-                                    "estimatedReviews": { "type": "NUMBER" },
-                                    "weakness": { "type": "STRING", "description": "A specific, exploitable weakness in their GBP (e.g., 'rarely posts updates', 'has no service descriptions')." }
-                                }
-                            },
-                            "description": "List the top 3 AI-identified local competitors with their estimated stats and a key weakness."
-                        },
-                        "opportunityGaps": { type: "ARRAY", items: { type: "STRING" }, "description": "3 specific, high-impact opportunities based on the competitor weaknesses." }
-                    },
-                    required: ["topCompetitors", "opportunityGaps"]
-                },
-                "gmbOptimization": {
-                    type: "OBJECT",
-                    properties: {
-                        "optimizationScore": { "type": "NUMBER", "description": "An estimated GBP optimization score out of 100 for the user's business, likely low." },
-                        "missingCategories": { type: "ARRAY", items: { type: "STRING" }, "description": "3-5 specific, relevant GBP categories they are likely missing." },
-                        "photoStrategy": { type: "ARRAY", items: { type: "STRING" }, "description": "4 specific types of photos they must add (e.g., 'Photos of the team at work', 'A shot of the front entrance', 'Happy customer photos')." },
-                        "reviewStrategy": { type: "ARRAY", items: { type: "STRING" }, "description": "3 actionable steps to get more high-quality reviews." }
-                    },
-                    required: ["optimizationScore", "missingCategories", "photoStrategy", "reviewStrategy"]
-                },
-                "localDominationPlan": {
-                    type: "OBJECT",
-                    properties: {
-                        "week1": { type: "ARRAY", items: { type: "STRING" }, "description": "3 foundational tasks for Week 1." },
-                        "week2": { type: "ARRAY", items: { type: "STRING" }, "description": "3 content and engagement tasks for Week 2." },
-                        "week3": { type: "ARRAY", items: { type: "STRING" }, "description": "3 tasks focused on Apple Maps and advanced GBP features." },
-                        "week4": { type: "ARRAY", items: { type: "STRING" }, "description": "3 tasks for ongoing domination and review management." }
-                    },
-                    required: ["week1", "week2", "week3", "week4"]
-                }
-            },
-            required: ["executiveSummary", "competitorAnalysis", "gmbOptimization", "localDominationPlan"]
-        };
-
         try {
-            const apiKey = ""; // API key is injected by the environment
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ role: "user", parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: responseSchema,
-                }
-            };
-
-            const response = await fetch(apiUrl, {
+            const response = await fetch('/api/generate-report', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             });
 
             if (!response.ok) {
-                const errorBody = await response.text();
-                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorBody}`);
+                // If the server responds with an error, capture it
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'An unknown error occurred.');
             }
 
-            const result = await response.json();
-            if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts) {
-                const reportJsonText = result.candidates[0].content.parts[0].text;
-                const parsedReport = JSON.parse(reportJsonText);
-                setReportData(parsedReport);
-                setView('teaser'); // Go to the teaser page first
-            } else {
-                throw new Error("The AI response was empty or malformed.");
-            }
+            const report = await response.json();
+            setReportData(report);
+            setView('teaser'); // Go to the teaser page first
+            
         } catch (err) {
             console.error("Failed to generate report:", err);
-            setError("Failed to analyze local competition. This can happen during high traffic. Please try again.");
+            setError(err.message || "Failed to analyze local competition. This can happen during high traffic. Please try again.");
             setView('form');
         }
     };
