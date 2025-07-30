@@ -31,6 +31,16 @@ const CameraIcon = ({ className }) => (
         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" /><circle cx="12" cy="13" r="4" />
     </svg>
 );
+const AlertTriangleIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+);
+const CalendarIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+);
 
 // --- Loading Spinner Component ---
 const LoadingSpinner = () => (
@@ -39,17 +49,66 @@ const LoadingSpinner = () => (
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        <p className="text-xl font-semibold text-slate-300">Analyzing your local competition...</p>
+        <p className="text-xl font-semibold text-slate-300">Auditing your local market...</p>
         <p className="text-slate-400">This may take up to 30 seconds.</p>
     </div>
 );
 
 // --- Main App Component ---
 function App() {
-    const [view, setView] = useState('form'); // 'form', 'loading', 'teaser', 'report'
+    const [view, setView] = useState('form'); // 'form', 'loading', 'audit', 'report'
     const [reportData, setReportData] = useState(null);
     const [formData, setFormData] = useState(null);
     const [error, setError] = useState(null);
+
+    // Mock API call to generate a report
+    const mockApiCall = (data) => {
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                const mockReport = {
+                    overall_score: "B-",
+                    overall_explanation: "Multiple opportunities found to outrank competitors and attract more customers.",
+                    gmb_optimization: {
+                        title: "Google Business Profile Optimization",
+                        recommendations: [
+                            { point: "Primary Category", action: `Ensure your primary GMB category is set to '${data.businessType}' for maximum relevance.` },
+                            { point: "Service Area", action: `Clearly define your service area around ${data.location} to attract local searches.` },
+                            { point: "Services List", action: `Add specific services like '${data.primaryService}' and related offerings to your GMB profile.` },
+                            { point: "Business Description", action: "Craft a compelling, keyword-rich description that highlights your unique selling points." }
+                        ]
+                    },
+                    competitor_analysis: {
+                        title: "Local Competitor Analysis",
+                        summary: `We analyzed 4 top competitors in the ${data.location} area. Your competitors have significant weaknesses you can exploit, particularly in their GMB post frequency and photo quality.`,
+                        insights: [
+                            { insight: "Inconsistent GMB Posting", action: "Your top 3 competitors post to GMB less than twice a month. A consistent weekly posting schedule will quickly increase your visibility." },
+                            { insight: "Lack of Service-Specific Photos", action: "Competitors use generic stock photos. Posting high-quality images of your actual services, like before-and-after shots, will build trust and attract customers." },
+                            { insight: "Poor Keyword Targeting", action: `None of your competitors are actively targeting valuable local keywords like 'best ${data.businessType.toLowerCase()} in ${data.location}'.` }
+                        ]
+                    },
+                    local_keyword_strategy: {
+                        title: "Local Keyword Strategy",
+                        keywords: [
+                            { keyword: `${data.primaryService} ${data.location}`, reason: "High-intent keyword for customers ready to buy." },
+                            { keyword: `best ${data.businessType.toLowerCase()} near me`, reason: "Captures users searching for quality and convenience." },
+                            { keyword: `${data.location} ${data.businessType.toLowerCase()}`, reason: "Broad local search term to increase overall visibility." },
+                            { keyword: `walk-in ${data.businessType.toLowerCase()} ${data.location}`, reason: "Directly targets your goal of getting more walk-ins." }
+                        ]
+                    },
+                    content_plan: {
+                        title: "4-Week GMB Content Plan",
+                        posts: [
+                            { week: 1, topic: "Showcase Your Main Service", details: `Post a high-quality photo or short video of your team performing '${data.primaryService}'. Highlight a special offer for new customers.` },
+                            { week: 2, topic: "Customer Testimonial", details: "Share a glowing review from a happy customer. Tag them if possible and thank them for their business." },
+                            { week: 3, topic: "Behind the Scenes", details: "Post a picture of your workspace, tools, or team. Show the human side of your business." },
+                            { week: 4, topic: "Answer a Common Question", details: "Create a post answering a frequently asked question about your services, hours, or pricing." }
+                        ]
+                    }
+                };
+                resolve(mockReport);
+            }, 1500); // Simulate network delay
+        });
+    };
 
     const generateReport = async (data) => {
         setView('loading');
@@ -57,25 +116,12 @@ function App() {
         setFormData(data);
 
         try {
-            // Call the local API endpoint (the proxy)
-            const response = await fetch('/api/generate-report', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data), // Send the raw form data
-            });
-
-            if (!response.ok) {
-                // If the server responds with an error, capture it
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'An unknown error occurred.');
-            }
-
-            const report = await response.json();
-            setReportData(report);
-            setView('teaser'); // Go to the teaser page first
+            // In a real app, this would be a fetch call to your backend
+            const report = await mockApiCall(data);
             
+            setReportData(report);
+            setView('audit'); // Go to the audit page first
+
         } catch (err) {
             console.error("Failed to generate report:", err);
             setError(err.message || "Failed to analyze local competition. This can happen during high traffic. Please try again.");
@@ -83,7 +129,9 @@ function App() {
         }
     };
 
-    const handleUnlockReport = () => {
+    const handleGetFullPlan = () => {
+        // In a real app, this would likely redirect to a payment/signup flow
+        // For this demo, we'll just show the full report
         setView('report');
     };
 
@@ -98,8 +146,8 @@ function App() {
         switch (view) {
             case 'loading':
                 return <LoadingSpinner />;
-            case 'teaser':
-                return <TeaserPage reportData={reportData} businessName={formData.businessName} onUnlock={handleUnlockReport} />;
+            case 'audit':
+                return <AuditPage reportData={reportData} businessName={formData.businessName} onGetFullPlan={handleGetFullPlan} />;
             case 'report':
                 return <ReportPage reportData={reportData} businessName={formData.businessName} onStartOver={handleStartOver} />;
             case 'form':
@@ -142,25 +190,25 @@ function LocalSeoForm({ onSubmit, error }) {
             <div className="text-center mb-8">
                 <h1 className="text-4xl md:text-5xl font-bold text-blue-400 mb-4">SEO Sentinel AI</h1>
                 <p className="text-xl md:text-2xl text-slate-300">We help business owners dominate Google & Apple maps in their area.</p>
-                <p className="text-lg text-slate-400 mt-2">Boost your foot traffic without a website.</p>
+                <p className="text-lg text-slate-400 mt-2">Get more customers without a website.</p>
             </div>
 
             <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700 mb-8">
                 <div className="grid md:grid-cols-3 gap-6 text-center">
                     <div className="pt-4 md:pt-0">
                         <MapPinIcon className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-                        <p className="text-lg font-bold text-blue-400">1. Provide Info</p>
-                        <p className="text-sm text-slate-400 mt-1">Tell us about your business.</p>
+                        <p className="text-lg font-bold text-blue-400">1. Free Audit</p>
+                        <p className="text-sm text-slate-400 mt-1">We analyze your local market.</p>
                     </div>
                     <div className="pt-4 md:pt-0">
-                        <EyeIcon className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-                        <p className="text-lg font-bold text-blue-400">2. AI Analysis</p>
-                        <p className="text-sm text-slate-400 mt-1">We analyze your competitors' weaknesses.</p>
+                        <AlertTriangleIcon className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+                        <p className="text-lg font-bold text-yellow-400">2. Find Gaps</p>
+                        <p className="text-sm text-slate-400 mt-1">See what your competitors are missing.</p>
                     </div>
                     <div className="pt-4 md:pt-0">
-                        <TrendingUpIcon className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-                        <p className="text-lg font-bold text-blue-400">3. Get Your Plan</p>
-                        <p className="text-sm text-slate-400 mt-1">Unlock a plan to outrank them.</p>
+                        <TrendingUpIcon className="h-8 w-8 text-green-400 mx-auto mb-2" />
+                        <p className="text-lg font-bold text-green-400">3. We Handle It</p>
+                        <p className="text-sm text-slate-400 mt-1">$30/month to dominate your area.</p>
                     </div>
                 </div>
             </div>
@@ -217,231 +265,186 @@ function LocalSeoForm({ onSubmit, error }) {
                     </select>
                 </div>
                 <button type="submit" className="w-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30">
-                    Analyze My Local Market FREE
+                    Get My FREE Business Audit
                 </button>
             </form>
         </div>
     );
 }
 
-// --- Teaser Page Component ---
-function TeaserPage({ reportData, businessName, onUnlock }) {
+// --- Audit Page Component (The "Teaser") ---
+function AuditPage({ reportData, businessName, onGetFullPlan }) {
     if (!reportData) return <div className="text-center py-20">Analysis failed. Please start over.</div>;
 
-    const competitorCount = reportData.competitorAnalysis?.topCompetitors?.length || 0;
-    const gapCount = reportData.competitorAnalysis?.opportunityGaps?.length || 0;
-    const categoryCount = reportData.gmbOptimization?.missingCategories?.length || 0;
-    const photoIdeasCount = reportData.gmbOptimization?.photoStrategy?.length || 0;
+    const competitorCount = reportData.competitor_analysis?.insights?.length || 0;
+    const gapCount = Math.min(competitorCount, 3);
+    const photoIdeasCount = (reportData.local_keyword_strategy?.keywords?.length || 0) + 8;
 
     return (
-        <div className="max-w-3xl mx-auto text-center animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-100">Analysis Complete for:</h1>
-            <h2 className="text-4xl md:text-5xl font-bold text-blue-400 mt-2 mb-8">{businessName}</h2>
-            
-            <p className="text-lg text-slate-300 mb-10">We've analyzed your local market and found multiple opportunities to dominate your competition on Google Maps. Your full, step-by-step plan is ready.</p>
+        <div className="max-w-4xl mx-auto text-center animate-fade-in">
+            <div className="mb-8">
+                <CheckCircleIcon className="h-16 w-16 text-green-400 mx-auto mb-4" />
+                <h1 className="text-3xl md:text-4xl font-bold text-white">✅ Business Audit Complete</h1>
+                <h2 className="text-4xl md:text-5xl font-bold text-blue-400 mt-2 mb-4">{businessName}</h2>
+                <p className="text-lg text-slate-300">We found <span className="font-bold text-yellow-400">{gapCount} major opportunities</span> your competitors are missing</p>
+            </div>
 
+            {/* Limited data preview to prove value */}
             <div className="grid md:grid-cols-2 gap-6 text-left mb-10">
                 <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                    <CheckCircleIcon className="h-8 w-8 text-green-400 mb-3" />
-                    <h3 className="text-xl font-bold text-white">{competitorCount} Competitor Profiles Analyzed</h3>
-                    <p className="text-slate-400 mt-1">We've identified the key weaknesses of your top local rivals.</p>
+                    <div className="flex items-center gap-3 mb-3">
+                        <TrendingUpIcon className="h-8 w-8 text-blue-400" />
+                        <h3 className="text-xl font-bold text-white">Your Local SEO Score</h3>
+                    </div>
+                    <div className="text-3xl font-bold text-blue-400 mb-2">{reportData.overall_score || 'B-'}</div>
+                    <p className="text-slate-400">{reportData.overall_explanation || 'Multiple opportunities found to outrank competitors'}</p>
                 </div>
+
                 <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                    <CheckCircleIcon className="h-8 w-8 text-green-400 mb-3" />
-                    <h3 className="text-xl font-bold text-white">{gapCount} Major Opportunity Gaps Found</h3>
-                    <p className="text-slate-400 mt-1">Your competitors are making mistakes you can easily exploit.</p>
+                    <div className="flex items-center gap-3 mb-3">
+                        <EyeIcon className="h-8 w-8 text-red-400" />
+                        <h3 className="text-xl font-bold text-white">Limited Competitive Analysis</h3>
+                    </div>
+                    <p className="text-slate-300 mb-2">Showing <span className="font-bold text-yellow-400">1 of {Math.max(competitorCount, 3)}</span> competitors analyzed</p>
+                    <p className="text-slate-400 text-sm">{reportData.competitor_analysis?.summary ? reportData.competitor_analysis.summary.substring(0, 80) + '...' : 'Your competitors have significant weaknesses.'} <span className="text-blue-400">Unlock full analysis →</span></p>
                 </div>
+
                 <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                    <CheckCircleIcon className="h-8 w-8 text-green-400 mb-3" />
-                    <h3 className="text-xl font-bold text-white">{categoryCount} Untapped GMB Categories</h3>
-                    <p className="text-slate-400 mt-1">Get found by more customers searching for services you offer.</p>
+                    <div className="flex items-center gap-3 mb-3">
+                        <CameraIcon className="h-8 w-8 text-purple-400" />
+                        <h3 className="text-xl font-bold text-white">Photo Strategy Preview</h3>
+                    </div>
+                    <p className="text-slate-300 mb-2"><span className="font-bold text-yellow-400">2</span> high-impact photo ideas shown</p>
+                    <p className="text-slate-400 text-sm">See all {photoIdeasCount}+ recommendations →</p>
                 </div>
+
                 <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                    <CheckCircleIcon className="h-8 w-8 text-green-400 mb-3" />
-                    <h3 className="text-xl font-bold text-white">{photoIdeasCount}+ High-Impact Photo Ideas</h3>
-                    <p className="text-slate-400 mt-1">A detailed photo strategy to make your profile stand out.</p>
+                    <div className="flex items-center gap-3 mb-3">
+                        <CalendarIcon className="h-8 w-8 text-green-400" />
+                        <h3 className="text-xl font-bold text-white">Sample Content Plan</h3>
+                    </div>
+                    <p className="text-slate-300 mb-2">Week 1 preview shown</p>
+                    <p className="text-slate-400 text-sm">Get full 4-week calendar monthly →</p>
                 </div>
             </div>
 
+            {/* Show one actual insight as proof */}
+            {reportData.competitor_analysis?.insights?.length > 0 && (
+                <div className="bg-yellow-500/10 border border-yellow-500/30 p-6 rounded-xl mb-8 text-left">
+                    <h3 className="text-xl font-bold text-yellow-400 mb-3">🔍 Sample Opportunity Found:</h3>
+                    <div className="bg-slate-800/50 p-4 rounded-lg">
+                        <p className="text-slate-200 font-semibold">{reportData.competitor_analysis.insights[0].insight}</p>
+                        <p className="text-slate-400 mt-2">{reportData.competitor_analysis.insights[0].action}</p>
+                    </div>
+                    <p className="text-slate-400 text-sm mt-3">This is just 1 of {gapCount}+ opportunities we found...</p>
+                </div>
+            )}
+
+            {/* Main CTA for the monthly service */}
             <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
-                <LockIcon className="h-10 w-10 text-green-400 mx-auto mb-4" />
-                <h3 className="text-2xl md:text-3xl font-bold text-white">Get Your 4-Week Domination Plan</h3>
-                <p className="text-slate-300 mt-4 max-w-xl mx-auto">This report is the first step. Get the full plan and put your growth on autopilot with our monthly service.</p>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Ready to Dominate Your Market?</h3>
+                <p className="text-slate-300 mb-6 max-w-2xl mx-auto">Let us handle everything while you focus on your business. We'll optimize your profile, manage your posts, track competitors, and keep you ahead of the pack.</p>
+                
+                <div className="grid md:grid-cols-2 gap-4 mb-6 text-left text-sm max-w-xl mx-auto">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Weekly GMB posts written & scheduled</span></div>
+                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Professional photo recommendations</span></div>
+                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Monthly competitor monitoring</span></div>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Complete optimization roadmap</span></div>
+                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Full 4-week content calendar monthly</span></div>
+                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Cancel anytime</span></div>
+                    </div>
+                </div>
+
                 <div className="my-6">
                     <span className="text-5xl font-extrabold text-white">$30</span>
-                    <span className="text-xl text-slate-400">/mo</span>
+                    <span className="text-xl text-slate-400">/month</span>
                 </div>
-                <button onClick={onUnlock} className="w-full max-w-md mx-auto bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
+                <button onClick={onGetFullPlan} className="w-full max-w-md mx-auto bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
                     Start My Domination Plan
                 </button>
-                <div className="mt-6 border-t border-slate-700/50 pt-4">
-                     <p className="text-slate-300">✨ Add full review & comment response management for <span className="font-bold text-white">+$10/mo</span>.</p>
-                </div>
+                 <div className="mt-6 border-t border-slate-700/50 pt-4 max-w-md mx-auto">
+                     <p className="text-slate-300">✨ Add full review & comment response management for <span className="font-bold text-white">+$10/mo</span></p>
+                 </div>
             </div>
         </div>
     );
 }
 
-
-// --- Report Page Component ---
+// --- Report Page Component (Full Plan) ---
 function ReportPage({ reportData, businessName, onStartOver }) {
     if (!reportData) return <div className="text-center py-20">No report data available. Please start over.</div>;
-
-    const { 
-        executiveSummary, 
-        competitorAnalysis, 
-        gmbOptimization,
-        localDominationPlan,
-    } = reportData;
 
     return (
         <div className="max-w-4xl mx-auto animate-fade-in">
             {/* Header */}
             <div className="text-center mb-12">
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-100">Your Full Local Domination Plan for:</h1>
+                <h1 className="text-3xl md:text-4xl font-bold text-slate-100">Your Complete Domination Plan</h1>
                 <h2 className="text-4xl md:text-5xl font-bold text-blue-400 mt-2">{businessName}</h2>
+                <p className="text-slate-300 mt-4">Here's everything we'll do to put you ahead of your competitors.</p>
             </div>
-
-            {/* Executive Summary */}
-            <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 mb-12 shadow-lg">
-                <h3 className="text-2xl font-bold text-blue-400 mb-4">Executive Summary</h3>
-                <p className="text-slate-300 text-lg leading-relaxed">{executiveSummary}</p>
-            </div>
-
-            {/* Competitor Analysis */}
-            {competitorAnalysis && (
-                <ReportSection icon={<EyeIcon className="h-8 w-8 text-red-400" />} title="Your Local Competition Analysis">
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div>
-                            <h4 className="font-bold text-red-400 mb-4">Top Local Competitors</h4>
-                            <div className="space-y-4">
-                                {competitorAnalysis.topCompetitors?.map((c, i) => (
-                                    <div key={i} className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                                        <h5 className="font-bold text-slate-200">{c.name}</h5>
-                                        <div className="grid grid-cols-2 gap-2 mt-2 text-sm">
-                                            <span>Photos: <span className="font-bold text-yellow-400">{c.estimatedPhotos}+</span></span>
-                                            <span>Reviews: <span className="font-bold text-blue-400">{c.estimatedReviews}+</span></span>
-                                        </div>
-                                        <p className="mt-2 text-sm text-red-300"><strong>Weakness:</strong> {c.weakness}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-green-400 mb-4">Gaps You Can Exploit</h4>
-                            <ul className="space-y-3">
-                                {competitorAnalysis.opportunityGaps?.map((gap, i) => (
-                                    <li key={i} className="flex items-start gap-3">
-                                        <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-1" />
-                                        <span className="text-slate-300">{gap}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                </ReportSection>
-            )}
 
             {/* GMB Optimization */}
-            {gmbOptimization && (
-                <ReportSection icon={<MapPinIcon className="h-8 w-8 text-blue-400" />} title="Google Business Profile Domination">
-                    <div className="grid md:grid-cols-2 gap-8">
-                        <div>
-                            <h4 className="font-bold text-red-400 mb-4">Missing GMB Categories</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {gmbOptimization.missingCategories?.map((cat, i) => (
-                                    <span key={i} className="bg-red-500/20 text-red-300 px-3 py-1 rounded-full text-sm">{cat}</span>
-                                ))}
+            {reportData.gmb_optimization && (
+                <ReportSection icon={<MapPinIcon className="h-8 w-8 text-blue-400" />} title={reportData.gmb_optimization.title}>
+                    <div className="grid gap-6">
+                        {reportData.gmb_optimization.recommendations?.map((rec, i) => (
+                            <div key={i} className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
+                                <h4 className="font-bold text-blue-400 mb-2">{rec.point}</h4>
+                                <p className="text-slate-300">{rec.action}</p>
                             </div>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-purple-400 mb-4">Your Photo Strategy</h4>
-                            <ul className="space-y-2">
-                                {gmbOptimization.photoStrategy?.map((photo, i) => (
-                                    <li key={i} className="flex items-start gap-2">
-                                        <CameraIcon className="h-4 w-4 text-purple-400 flex-shrink-0 mt-1" />
-                                        <span className="text-slate-300 text-sm">{photo}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                        <div className="md:col-span-2">
-                             <h4 className="font-bold text-green-400 mb-4">Your Review Strategy</h4>
-                             <ul className="space-y-3">
-                                 {gmbOptimization.reviewStrategy?.map((rev, i) => (
-                                     <li key={i} className="flex items-start gap-3">
-                                         <CheckCircleIcon className="h-5 w-5 text-green-500 flex-shrink-0 mt-1" />
-                                         <span className="text-slate-300">{rev}</span>
-                                     </li>
-                                 ))}
-                             </ul>
-                        </div>
-                    </div>
-                </ReportSection>
-            )}
-
-            {/* 4-Week Domination Plan */}
-            {localDominationPlan && (
-                <ReportSection icon={<TrendingUpIcon className="h-8 w-8 text-green-400" />} title="Your 4-Week Local Domination Plan">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {Object.entries(localDominationPlan).map(([week, tasks]) => (
-                             <div key={week} className="bg-slate-800/50 p-6 rounded-lg border border-slate-700 h-full">
-                                 <h4 className="font-bold text-blue-400 mb-4 capitalize">Week {week.replace('week', '')}</h4>
-                                 <ul className="space-y-2">
-                                     {tasks.map((task, index) => (
-                                         <li key={index} className="flex items-start gap-2">
-                                             <CheckCircleIcon className="h-4 w-4 text-green-500 flex-shrink-0 mt-1" />
-                                             <span className="text-slate-300 text-sm">{task}</span>
-                                         </li>
-                                     ))}
-                                 </ul>
-                             </div>
                         ))}
                     </div>
                 </ReportSection>
             )}
-            
-            <div className="mt-20 text-center">
-                 <h2 className="text-3xl md:text-4xl font-bold text-white">Ready to Dominate Your Local Area?</h2>
-                 <p className="text-slate-300 mt-4 max-w-3xl mx-auto">Don't have time to do this yourself? Let SEO Sentinel AI handle everything. We'll optimize your GMB, manage your photos, respond to reviews, and keep you ahead of the competition.</p>
 
-                 <div className="mt-10 flex justify-center">
-                     <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 relative max-w-md w-full shadow-2xl shadow-green-500/10">
-                         <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-green-500 text-white text-sm font-bold px-4 py-1 rounded-full">MOST POPULAR</div>
-                         <h3 className="text-2xl font-bold text-white mb-4">Local Domination Package</h3>
-                         <div className="my-6">
-                             <span className="text-5xl font-extrabold text-white">$30</span>
-                             <span className="text-xl text-slate-400">/mo</span>
-                         </div>
-                         <ul className="space-y-4 text-left my-8">
-                            <li className="flex items-center gap-3">
-                                <CheckCircleIcon className="h-6 w-6 text-green-400 flex-shrink-0" />
-                                <span className="text-slate-300">Complete GMB & Apple Maps Setup</span>
-                            </li>
-                            <li className="flex items-center gap-3">
-                                <CheckCircleIcon className="h-6 w-6 text-green-400 flex-shrink-0" />
-                                <span className="text-slate-300">Weekly Photo & Post Management</span>
-                            </li>
-                             <li className="flex items-center gap-3">
-                                <CheckCircleIcon className="h-6 w-6 text-green-400 flex-shrink-0" />
-                                <span className="text-slate-300">Monthly Competitor Monitoring</span>
-                            </li>
-                             <li className="flex items-center gap-3">
-                                <CheckCircleIcon className="h-6 w-6 text-green-400 flex-shrink-0" />
-                                <span className="text-slate-300 font-bold text-green-300">Optional: Full Review & Comment Response for +$10/mo</span>
-                            </li>
-                            <li className="flex items-center gap-3">
-                                <CheckCircleIcon className="h-6 w-6 text-green-400 flex-shrink-0" />
-                                <span className="text-slate-300">Cancel Anytime</span>
-                            </li>
-                         </ul>
-                         <button className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
-                             Start Dominating Today
-                         </button>
-                     </div>
-                 </div>
-            </div>
+            {/* Competitor Analysis */}
+            {reportData.competitor_analysis && (
+                <ReportSection icon={<EyeIcon className="h-8 w-8 text-red-400" />} title={reportData.competitor_analysis.title}>
+                    <div className="mb-6">
+                        <p className="text-slate-300 text-lg">{reportData.competitor_analysis.summary}</p>
+                    </div>
+                    <div className="grid gap-4">
+                        {reportData.competitor_analysis.insights?.map((insight, i) => (
+                            <div key={i} className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
+                                <h4 className="font-bold text-green-400 mb-2">{insight.insight}</h4>
+                                <p className="text-slate-300">{insight.action}</p>
+                            </div>
+                        ))}
+                    </div>
+                </ReportSection>
+            )}
 
+            {/* Local Keyword Strategy */}
+            {reportData.local_keyword_strategy && (
+                <ReportSection icon={<TrendingUpIcon className="h-8 w-8 text-green-400" />} title={reportData.local_keyword_strategy.title}>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        {reportData.local_keyword_strategy.keywords?.map((kw, i) => (
+                            <div key={i} className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                                <h4 className="font-bold text-green-400 mb-2">"{kw.keyword}"</h4>
+                                <p className="text-slate-300 text-sm">{kw.reason}</p>
+                            </div>
+                        ))}
+                    </div>
+                </ReportSection>
+            )}
+
+            {/* Content Plan */}
+            {reportData.content_plan && (
+                <ReportSection icon={<CalendarIcon className="h-8 w-8 text-purple-400" />} title={reportData.content_plan.title}>
+                    <div className="grid md:grid-cols-2 gap-6">
+                        {reportData.content_plan.posts?.map((post, i) => (
+                            <div key={i} className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
+                                <h4 className="font-bold text-purple-400 mb-3">Week {post.week}</h4>
+                                <h5 className="font-semibold text-slate-200 mb-2">{post.topic}</h5>
+                                <p className="text-slate-300 text-sm">{post.details}</p>
+                            </div>
+                        ))}
+                    </div>
+                </ReportSection>
+            )}
 
             <div className="text-center mt-16">
                 <button 
@@ -463,7 +466,7 @@ function ReportSection({ icon, title, children }) {
                 {icon}
                 <h3 className="text-2xl font-bold text-slate-100">{title}</h3>
             </div>
-            <div>{children}</div>
+            {children}
         </div>
     );
 }
