@@ -19,6 +19,7 @@ export default async function handler(req, res) {
   }
 
   // 4. --- Construct the Prompt for the AI ---
+  // This prompt is well-structured and asks for a specific JSON output.
   const prompt = `
     Analyze the following local business and generate a comprehensive Local SEO Action Plan. The business details are:
     - Business Name: ${formData.businessName}
@@ -58,7 +59,8 @@ export default async function handler(req, res) {
   `;
 
   // 5. --- Call the Gemini API ---
- const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
+  // THE FIX: The model name is updated from 'gemini-pro' to the current 'gemini-1.5-flash-latest'.
+  const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
 
   try {
     const apiResponse = await fetch(apiUrl, {
@@ -82,19 +84,16 @@ export default async function handler(req, res) {
     const responseData = await apiResponse.json();
     
     // --- ROBUST JSON PARSING ---
-    // Get the raw text from the AI response.
+    // This section is well-written to handle potential inconsistencies from the AI.
     const rawText = responseData.candidates[0].content.parts[0].text;
-    
-    // Clean the text: remove backticks, "json" markers, and trim whitespace.
     const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
 
     let reportJson;
     try {
-        // Try to parse the cleaned text.
         reportJson = JSON.parse(cleanedText);
     } catch (parseError) {
         console.error("Failed to parse JSON response from AI.");
-        console.error("Raw AI Response:", rawText); // Log the problematic response
+        console.error("Raw AI Response:", rawText);
         throw new Error("The AI returned a response in an unexpected format.");
     }
 
@@ -103,7 +102,6 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error('Full error details:', error.message);
-    // Send a more specific error message to the frontend.
     res.status(500).json({ error: error.message || 'An unknown server error occurred.' });
   }
 }
