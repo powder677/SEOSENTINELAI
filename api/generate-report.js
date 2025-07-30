@@ -3,28 +3,22 @@
 // This is a Vercel Serverless Function. It runs securely on the backend.
 export default async function handler(req, res) {
   // 1. --- Security and Method Check ---
-  // Only allow POST requests
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
     return res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 
   // 2. --- Get Data from Frontend ---
-  // The form data sent from the React app is in the request body.
   const formData = req.body;
 
   // 3. --- Get Secure API Key ---
-  // IMPORTANT: The API key is stored in Vercel Environment Variables, not in the code.
-  // You will need to add this variable in your Vercel project settings.
   const geminiApiKey = process.env.GEMINI_API_KEY;
-
   if (!geminiApiKey) {
-    console.error("Gemini API key is not configured.");
-    return res.status(500).json({ error: "Server configuration error." });
+    console.error("CRITICAL: GEMINI_API_KEY environment variable is not set.");
+    return res.status(500).json({ error: "Server configuration error. The API key is missing." });
   }
 
   // 4. --- Construct the Prompt for the AI ---
-  // This is the same logic you had, but now running on the server.
   const prompt = `
     Analyze the following local business and generate a comprehensive Local SEO Action Plan. The business details are:
     - Business Name: ${formData.businessName}
@@ -82,22 +76,34 @@ export default async function handler(req, res) {
     if (!apiResponse.ok) {
         const errorBody = await apiResponse.text();
         console.error("Gemini API Error:", errorBody);
-        throw new Error(`API call failed with status: ${apiResponse.status}`);
+        throw new Error(`The AI service returned an error. Status: ${apiResponse.status}`);
     }
 
     const responseData = await apiResponse.json();
     
-    // Extract the JSON string from the response
-    const jsonString = responseData.candidates[0].content.parts[0].text;
+    // --- ROBUST JSON PARSING ---
+    // Get the raw text from the AI response.
+    const rawText = responseData.candidates[0].content.parts[0].text;
     
-    // Parse it into a JavaScript object
-    const reportJson = JSON.parse(jsonString);
+    // Clean the text: remove backticks, "json" markers, and trim whitespace.
+    const cleanedText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+
+    let reportJson;
+    try {
+        // Try to parse the cleaned text.
+        reportJson = JSON.parse(cleanedText);
+    } catch (parseError) {
+        console.error("Failed to parse JSON response from AI.");
+        console.error("Raw AI Response:", rawText); // Log the problematic response
+        throw new Error("The AI returned a response in an unexpected format.");
+    }
 
     // 6. --- Send the Result Back to the Frontend ---
     res.status(200).json(reportJson);
 
   } catch (error) {
-    console.error('Error calling Gemini API or parsing response:', error);
-    res.status(500).json({ error: 'Failed to generate report.' });
+    console.error('Full error details:', error.message);
+    // Send a more specific error message to the frontend.
+    res.status(500).json({ error: error.message || 'An unknown server error occurred.' });
   }
 }
