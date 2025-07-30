@@ -6,11 +6,6 @@ const CheckCircleIcon = ({ className }) => (
     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
   </svg>
 );
-const LockIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-    </svg>
-);
 const MapPinIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
@@ -41,6 +36,11 @@ const CalendarIcon = ({ className }) => (
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
     </svg>
 );
+const ToolIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+    </svg>
+);
 
 // --- Loading Spinner Component ---
 const LoadingSpinner = () => (
@@ -61,36 +61,23 @@ function App() {
     const [formData, setFormData] = useState(null);
     const [error, setError] = useState(null);
 
-    // This function now calls a real API endpoint
     const generateReport = async (data) => {
         setView('loading');
         setError(null);
         setFormData(data);
-
         try {
-            // Use the fetch API to send a POST request to your backend.
-            // Replace '/api/generate-report' with your actual API endpoint.
             const response = await fetch('/api/generate-report', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data),
             });
-
-            // Check if the request was successful
             if (!response.ok) {
-                // Try to get a meaningful error message from the response body
                 const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred.' }));
                 throw new Error(errorData.message || `Server responded with status: ${response.status}`);
             }
-
-            // Parse the JSON response from the API
             const report = await response.json();
-            
             setReportData(report);
-            setView('audit'); // Go to the audit page first
-
+            setView('audit');
         } catch (err) {
             console.error("Failed to generate report:", err);
             setError(err.message || "Failed to analyze local competition. This can happen during high traffic. Please try again.");
@@ -99,8 +86,6 @@ function App() {
     };
 
     const handleGetFullPlan = () => {
-        // In a real app, this would likely redirect to a payment/signup flow
-        // For this demo, we'll just show the full report
         setView('report');
     };
 
@@ -118,7 +103,7 @@ function App() {
             case 'audit':
                 return <AuditPage reportData={reportData} businessName={formData.businessName} onGetFullPlan={handleGetFullPlan} />;
             case 'report':
-                return <ReportPage reportData={reportData} businessName={formData.businessName} onStartOver={handleStartOver} />;
+                return <OnboardingPage reportData={reportData} businessName={formData.businessName} onStartOver={handleStartOver} />;
             case 'form':
             default:
                 return <LocalSeoForm onSubmit={generateReport} error={error} />;
@@ -175,8 +160,8 @@ function LocalSeoForm({ onSubmit, error }) {
                         <p className="text-sm text-slate-400 mt-1">See what your competitors are missing.</p>
                     </div>
                     <div className="pt-4 md:pt-0">
-                        <TrendingUpIcon className="h-8 w-8 text-green-400 mx-auto mb-2" />
-                        <p className="text-lg font-bold text-green-400">3. We Handle It</p>
+                        <ToolIcon className="h-8 w-8 text-green-400 mx-auto mb-2" />
+                        <p className="text-lg font-bold text-green-400">3. We Fix It</p>
                         <p className="text-sm text-slate-400 mt-1">$30/month to dominate your area.</p>
                     </div>
                 </div>
@@ -247,18 +232,17 @@ function AuditPage({ reportData, businessName, onGetFullPlan }) {
 
     const competitorCount = reportData.competitor_analysis?.insights?.length || 0;
     const gapCount = Math.min(competitorCount, 3);
-    const photoIdeasCount = (reportData.local_keyword_strategy?.keywords?.length || 0) + 8;
-
+    
     return (
         <div className="max-w-4xl mx-auto text-center animate-fade-in">
             <div className="mb-8">
                 <CheckCircleIcon className="h-16 w-16 text-green-400 mx-auto mb-4" />
                 <h1 className="text-3xl md:text-4xl font-bold text-white">✅ Business Audit Complete</h1>
                 <h2 className="text-4xl md:text-5xl font-bold text-blue-400 mt-2 mb-4">{businessName}</h2>
-                <p className="text-lg text-slate-300">We found <span className="font-bold text-yellow-400">{gapCount} major opportunities</span> your competitors are missing</p>
+                <p className="text-lg text-slate-300">We found <span className="font-bold text-yellow-400">{gapCount} major opportunities</span> your competitors are missing.</p>
             </div>
 
-            {/* Limited data preview to prove value */}
+            {/* Show a few key insights from the report as a teaser */}
             <div className="grid md:grid-cols-2 gap-6 text-left mb-10">
                 <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
                     <div className="flex items-center gap-3 mb-3">
@@ -269,151 +253,131 @@ function AuditPage({ reportData, businessName, onGetFullPlan }) {
                     <p className="text-slate-400">{reportData.overall_explanation || 'Multiple opportunities found to outrank competitors'}</p>
                 </div>
 
-                <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                    <div className="flex items-center gap-3 mb-3">
-                        <EyeIcon className="h-8 w-8 text-red-400" />
-                        <h3 className="text-xl font-bold text-white">Limited Competitive Analysis</h3>
+                {reportData.competitor_analysis?.insights?.length > 0 && (
+                     <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
+                        <div className="flex items-center gap-3 mb-3">
+                            <EyeIcon className="h-8 w-8 text-red-400" />
+                            <h3 className="text-xl font-bold text-white">Top Competitor Weakness</h3>
+                        </div>
+                        <p className="text-slate-300 font-semibold mb-2">{reportData.competitor_analysis.insights[0].insight}</p>
+                        <p className="text-slate-400 text-sm">{reportData.competitor_analysis.insights[0].action}</p>
                     </div>
-                    <p className="text-slate-300 mb-2">Showing <span className="font-bold text-yellow-400">1 of {Math.max(competitorCount, 3)}</span> competitors analyzed</p>
-                    <p className="text-slate-400 text-sm">{reportData.competitor_analysis?.summary ? reportData.competitor_analysis.summary.substring(0, 80) + '...' : 'Your competitors have significant weaknesses.'} <span className="text-blue-400">Unlock full analysis →</span></p>
-                </div>
-
-                <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                    <div className="flex items-center gap-3 mb-3">
-                        <CameraIcon className="h-8 w-8 text-purple-400" />
-                        <h3 className="text-xl font-bold text-white">Photo Strategy Preview</h3>
-                    </div>
-                    <p className="text-slate-300 mb-2"><span className="font-bold text-yellow-400">2</span> high-impact photo ideas shown</p>
-                    <p className="text-slate-400 text-sm">See all {photoIdeasCount}+ recommendations →</p>
-                </div>
-
-                <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                    <div className="flex items-center gap-3 mb-3">
-                        <CalendarIcon className="h-8 w-8 text-green-400" />
-                        <h3 className="text-xl font-bold text-white">Sample Content Plan</h3>
-                    </div>
-                    <p className="text-slate-300 mb-2">Week 1 preview shown</p>
-                    <p className="text-slate-400 text-sm">Get full 4-week calendar monthly →</p>
-                </div>
+                )}
             </div>
-
-            {/* Show one actual insight as proof */}
-            {reportData.competitor_analysis?.insights?.length > 0 && (
-                <div className="bg-yellow-500/10 border border-yellow-500/30 p-6 rounded-xl mb-8 text-left">
-                    <h3 className="text-xl font-bold text-yellow-400 mb-3">🔍 Sample Opportunity Found:</h3>
-                    <div className="bg-slate-800/50 p-4 rounded-lg">
-                        <p className="text-slate-200 font-semibold">{reportData.competitor_analysis.insights[0].insight}</p>
-                        <p className="text-slate-400 mt-2">{reportData.competitor_analysis.insights[0].action}</p>
-                    </div>
-                    <p className="text-slate-400 text-sm mt-3">This is just 1 of {gapCount}+ opportunities we found...</p>
-                </div>
-            )}
-
-            {/* Main CTA for the monthly service */}
+            
+            {/* Main CTA to see the full plan */}
             <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
-                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Ready to Dominate Your Market?</h3>
-                <p className="text-slate-300 mb-6 max-w-2xl mx-auto">Let us handle everything while you focus on your business. We'll optimize your profile, manage your posts, track competitors, and keep you ahead of the pack.</p>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-2">Want Our Experts to Fix These Issues?</h3>
+                <p className="text-slate-300 mb-6 max-w-2xl mx-auto">Click below to see your personalized 30-day action plan. We'll show you exactly how we'll get you more customers.</p>
                 
-                <div className="grid md:grid-cols-2 gap-4 mb-6 text-left text-sm max-w-xl mx-auto">
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Weekly GMB posts written & scheduled</span></div>
-                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Professional photo recommendations</span></div>
-                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Monthly competitor monitoring</span></div>
-                    </div>
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Complete optimization roadmap</span></div>
-                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Full 4-week content calendar monthly</span></div>
-                        <div className="flex items-center gap-2"><CheckCircleIcon className="h-4 w-4 text-green-400 flex-shrink-0" /><span className="text-slate-300">Cancel anytime</span></div>
-                    </div>
-                </div>
-
-                <div className="my-6">
-                    <span className="text-5xl font-extrabold text-white">$30</span>
-                    <span className="text-xl text-slate-400">/month</span>
-                </div>
                 <button onClick={onGetFullPlan} className="w-full max-w-md mx-auto bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
-                    Start My Domination Plan
+                    Yes, Show Me the Plan 🔧
                 </button>
-                 <div className="mt-6 border-t border-slate-700/50 pt-4 max-w-md mx-auto">
-                      <p className="text-slate-300">✨ Add full review & comment response management for <span className="font-bold text-white">+$10/mo</span></p>
-                 </div>
             </div>
         </div>
     );
 }
 
-// --- Report Page Component (Full Plan) ---
-function ReportPage({ reportData, businessName, onStartOver }) {
-    if (!reportData) return <div className="text-center py-20">No report data available. Please start over.</div>;
+
+// --- Onboarding Page Component (The New Final Page) ---
+function OnboardingPage({ businessName, onStartOver }) {
+    const [includeAddon, setIncludeAddon] = useState(false);
+    const [onboardingData, setOnboardingData] = useState({ name: '', email: '' });
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setOnboardingData(prev => ({...prev, [name]: value}));
+    };
+
+    const handleCheckout = (e) => {
+        e.preventDefault();
+        // In a real app, you would integrate with a payment provider like Stripe
+        // and then send the onboardingData to your backend.
+        alert(`Checkout initiated for ${onboardingData.email} with add-on: ${includeAddon}. Total: $${30 + (includeAddon ? 10 : 0)}`);
+    };
+
+    const deliverables = [
+        { week: 1, icon: "📸", action: "Photo Strategy Launch", description: "We’ll send you 5 custom photo prompts to capture + upload, or we can use AI-enhanced images." },
+        { week: 2, icon: "✍️", action: "4 GMB Posts Written & Scheduled", description: "We’ll write and queue up your GMB posts — including one based on a review/testimonial." },
+        { week: 3, icon: "⭐", action: "Review System Kickoff", description: "You'll get a printable + digital “Review Request Card” for staff to hand out, plus SMS/email copy." },
+        { week: 4, icon: "📊", action: "Competitor Positioning Report", description: "See your new ranking and how you compare. We’ll tweak the strategy if needed." },
+    ];
 
     return (
         <div className="max-w-4xl mx-auto animate-fade-in">
-            {/* Header */}
-            <div className="text-center mb-12">
-                <h1 className="text-3xl md:text-4xl font-bold text-slate-100">Your Complete Domination Plan</h1>
-                <h2 className="text-4xl md:text-5xl font-bold text-blue-400 mt-2">{businessName}</h2>
-                <p className="text-slate-300 mt-4">Here's everything we'll do to put you ahead of your competitors.</p>
+            <div className="text-center mb-10">
+                <h1 className="text-4xl md:text-5xl font-bold text-white">🚀 Ready to Fix This in the Next 30 Days?</h1>
+                <p className="text-xl text-slate-300 mt-4">Here's exactly what you'll get when you activate your Local SEO Optimization Plan for <span className="text-blue-400 font-bold">{businessName}</span>:</p>
             </div>
 
-            {/* GMB Optimization */}
-            {reportData.gmb_optimization && (
-                <ReportSection icon={<MapPinIcon className="h-8 w-8 text-blue-400" />} title={reportData.gmb_optimization.title}>
-                    <div className="grid gap-6">
-                        {reportData.gmb_optimization.recommendations?.map((rec, i) => (
-                            <div key={i} className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
-                                <h4 className="font-bold text-blue-400 mb-2">{rec.point}</h4>
-                                <p className="text-slate-300">{rec.action}</p>
+            {/* Deliverables Section */}
+            <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 mb-10">
+                <h2 className="text-2xl font-bold text-center text-blue-400 mb-6">📦 Month 1: Deliverables</h2>
+                <div className="space-y-6">
+                    {deliverables.map(item => (
+                        <div key={item.week} className="flex items-start gap-4">
+                            <div className="text-3xl mt-1">{item.icon}</div>
+                            <div>
+                                <h3 className="font-bold text-lg text-slate-100">{item.action}</h3>
+                                <p className="text-slate-400">{item.description}</p>
                             </div>
-                        ))}
+                        </div>
+                    ))}
+                </div>
+                <div className="mt-8 pt-6 border-t border-slate-700">
+                    <h3 className="text-xl font-bold text-center text-blue-400 mb-4">🔁 Every Month After:</h3>
+                    <div className="grid grid-cols-2 gap-4 text-center text-slate-300">
+                        <p>4 new GMB posts</p>
+                        <p>Monthly competitor tracking</p>
+                        <p>Photo content review</p>
+                        <p>Review system feedback</p>
                     </div>
-                </ReportSection>
-            )}
+                </div>
+            </div>
+            
+            {/* Onboarding & Checkout Form */}
+            <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
+                 <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Let's Get Started</h2>
+                 <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
+                     <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
+                        <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                     </div>
+                     <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Best Email for Updates</label>
+                        <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="you@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                     </div>
 
-            {/* Competitor Analysis */}
-            {reportData.competitor_analysis && (
-                <ReportSection icon={<EyeIcon className="h-8 w-8 text-red-400" />} title={reportData.competitor_analysis.title}>
-                    <div className="mb-6">
-                        <p className="text-slate-300 text-lg">{reportData.competitor_analysis.summary}</p>
+                     <div className="relative flex items-start">
+                        <div className="flex h-6 items-center">
+                            <input
+                                id="addon"
+                                name="addon"
+                                type="checkbox"
+                                checked={includeAddon}
+                                onChange={(e) => setIncludeAddon(e.target.checked)}
+                                className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-green-500 focus:ring-green-500"
+                            />
+                        </div>
+                        <div className="ml-3 text-sm leading-6">
+                            <label htmlFor="addon" className="font-medium text-slate-200">
+                                Add Review Response Management for +$10/mo
+                            </label>
+                            <p className="text-slate-400">We'll professionally respond to all new reviews on your GMB profile.</p>
+                        </div>
                     </div>
-                    <div className="grid gap-4">
-                        {reportData.competitor_analysis.insights?.map((insight, i) => (
-                            <div key={i} className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
-                                <h4 className="font-bold text-green-400 mb-2">{insight.insight}</h4>
-                                <p className="text-slate-300">{insight.action}</p>
-                            </div>
-                        ))}
-                    </div>
-                </ReportSection>
-            )}
 
-            {/* Local Keyword Strategy */}
-            {reportData.local_keyword_strategy && (
-                <ReportSection icon={<TrendingUpIcon className="h-8 w-8 text-green-400" />} title={reportData.local_keyword_strategy.title}>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        {reportData.local_keyword_strategy.keywords?.map((kw, i) => (
-                            <div key={i} className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                                <h4 className="font-bold text-green-400 mb-2">"{kw.keyword}"</h4>
-                                <p className="text-slate-300 text-sm">{kw.reason}</p>
-                            </div>
-                        ))}
+                    <div className="text-center pt-4">
+                         <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
+                            Start My 30-Day Optimization – ${30 + (includeAddon ? 10 : 0)}/month
+                        </button>
                     </div>
-                </ReportSection>
-            )}
+                 </form>
+                 <div className="text-center mt-6">
+                     <p className="text-xs text-slate-500">You’ll receive a short onboarding form for your GMB link after payment. Posts & photo guidance begin arriving within 48 hours.</p>
+                 </div>
+            </div>
 
-            {/* Content Plan */}
-            {reportData.content_plan && (
-                <ReportSection icon={<CalendarIcon className="h-8 w-8 text-purple-400" />} title={reportData.content_plan.title}>
-                    <div className="grid md:grid-cols-2 gap-6">
-                        {reportData.content_plan.posts?.map((post, i) => (
-                            <div key={i} className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
-                                <h4 className="font-bold text-purple-400 mb-3">Week {post.week}</h4>
-                                <h5 className="font-semibold text-slate-200 mb-2">{post.topic}</h5>
-                                <p className="text-slate-300 text-sm">{post.details}</p>
-                            </div>
-                        ))}
-                    </div>
-                </ReportSection>
-            )}
 
             <div className="text-center mt-16">
                 <button 
@@ -423,19 +387,6 @@ function ReportPage({ reportData, businessName, onStartOver }) {
                     &laquo; Analyze Another Business
                 </button>
             </div>
-        </div>
-    );
-}
-
-// Helper component for Report Sections
-function ReportSection({ icon, title, children }) {
-    return (
-        <div className="bg-slate-800/30 p-6 md:p-8 rounded-2xl border border-slate-700 mb-8">
-            <div className="flex items-center gap-4 mb-6">
-                {icon}
-                <h3 className="text-2xl font-bold text-slate-100">{title}</h3>
-            </div>
-            {children}
         </div>
     );
 }
