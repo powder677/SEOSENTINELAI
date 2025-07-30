@@ -61,63 +61,32 @@ function App() {
     const [formData, setFormData] = useState(null);
     const [error, setError] = useState(null);
 
-    // Mock API call to generate a report
-    const mockApiCall = (data) => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const mockReport = {
-                    overall_score: "B-",
-                    overall_explanation: "Multiple opportunities found to outrank competitors and attract more customers.",
-                    gmb_optimization: {
-                        title: "Google Business Profile Optimization",
-                        recommendations: [
-                            { point: "Primary Category", action: `Ensure your primary GMB category is set to '${data.businessType}' for maximum relevance.` },
-                            { point: "Service Area", action: `Clearly define your service area around ${data.location} to attract local searches.` },
-                            { point: "Services List", action: `Add specific services like '${data.primaryService}' and related offerings to your GMB profile.` },
-                            { point: "Business Description", action: "Craft a compelling, keyword-rich description that highlights your unique selling points." }
-                        ]
-                    },
-                    competitor_analysis: {
-                        title: "Local Competitor Analysis",
-                        summary: `We analyzed 4 top competitors in the ${data.location} area. Your competitors have significant weaknesses you can exploit, particularly in their GMB post frequency and photo quality.`,
-                        insights: [
-                            { insight: "Inconsistent GMB Posting", action: "Your top 3 competitors post to GMB less than twice a month. A consistent weekly posting schedule will quickly increase your visibility." },
-                            { insight: "Lack of Service-Specific Photos", action: "Competitors use generic stock photos. Posting high-quality images of your actual services, like before-and-after shots, will build trust and attract customers." },
-                            { insight: "Poor Keyword Targeting", action: `None of your competitors are actively targeting valuable local keywords like 'best ${data.businessType.toLowerCase()} in ${data.location}'.` }
-                        ]
-                    },
-                    local_keyword_strategy: {
-                        title: "Local Keyword Strategy",
-                        keywords: [
-                            { keyword: `${data.primaryService} ${data.location}`, reason: "High-intent keyword for customers ready to buy." },
-                            { keyword: `best ${data.businessType.toLowerCase()} near me`, reason: "Captures users searching for quality and convenience." },
-                            { keyword: `${data.location} ${data.businessType.toLowerCase()}`, reason: "Broad local search term to increase overall visibility." },
-                            { keyword: `walk-in ${data.businessType.toLowerCase()} ${data.location}`, reason: "Directly targets your goal of getting more walk-ins." }
-                        ]
-                    },
-                    content_plan: {
-                        title: "4-Week GMB Content Plan",
-                        posts: [
-                            { week: 1, topic: "Showcase Your Main Service", details: `Post a high-quality photo or short video of your team performing '${data.primaryService}'. Highlight a special offer for new customers.` },
-                            { week: 2, topic: "Customer Testimonial", details: "Share a glowing review from a happy customer. Tag them if possible and thank them for their business." },
-                            { week: 3, topic: "Behind the Scenes", details: "Post a picture of your workspace, tools, or team. Show the human side of your business." },
-                            { week: 4, topic: "Answer a Common Question", details: "Create a post answering a frequently asked question about your services, hours, or pricing." }
-                        ]
-                    }
-                };
-                resolve(mockReport);
-            }, 1500); // Simulate network delay
-        });
-    };
-
+    // This function now calls a real API endpoint
     const generateReport = async (data) => {
         setView('loading');
         setError(null);
         setFormData(data);
 
         try {
-            // In a real app, this would be a fetch call to your backend
-            const report = await mockApiCall(data);
+            // Use the fetch API to send a POST request to your backend.
+            // Replace '/api/generate-report' with your actual API endpoint.
+            const response = await fetch('/api/generate-report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            // Check if the request was successful
+            if (!response.ok) {
+                // Try to get a meaningful error message from the response body
+                const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred.' }));
+                throw new Error(errorData.message || `Server responded with status: ${response.status}`);
+            }
+
+            // Parse the JSON response from the API
+            const report = await response.json();
             
             setReportData(report);
             setView('audit'); // Go to the audit page first
@@ -366,7 +335,7 @@ function AuditPage({ reportData, businessName, onGetFullPlan }) {
                     Start My Domination Plan
                 </button>
                  <div className="mt-6 border-t border-slate-700/50 pt-4 max-w-md mx-auto">
-                     <p className="text-slate-300">✨ Add full review & comment response management for <span className="font-bold text-white">+$10/mo</span></p>
+                      <p className="text-slate-300">✨ Add full review & comment response management for <span className="font-bold text-white">+$10/mo</span></p>
                  </div>
             </div>
         </div>
