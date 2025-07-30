@@ -51,140 +51,31 @@ function App() {
     const [formData, setFormData] = useState(null);
     const [error, setError] = useState(null);
 
-    // --- Gemini API Call ---
     const generateReport = async (data) => {
         setView('loading');
         setError(null);
         setFormData(data);
 
-        // --- Prompt for the AI Model ---
-        const prompt = `
-            You are "SEO Sentinel AI," an expert local SEO analyst specializing in Google Business Profile (GBP) and Apple Maps optimization for small businesses. Your goal is to provide a comprehensive, actionable report to help a business owner dominate their local market.
-
-            Business Details:
-            - Business Name: "${data.businessName}"
-            - Business Type: "${data.businessType}"
-            - Location: "${data.location}"
-            - Primary Service: "${data.primaryService}"
-            - Main Goal: "${data.mainGoal}"
-
-            Generate a detailed report in the specified JSON format. The tone should be encouraging, authoritative, and clear. The advice must be practical and tailored to the business type.
-
-            JSON Generation Instructions:
-            - Create plausible but fictional names for competitors.
-            - Ensure all analysis and recommendations are highly relevant to the business type and location. For example, a barber shop's photo strategy should include pictures of haircuts, the interior, and tools, not food. A restaurant's strategy should focus on menu items, ambiance, etc.
-            - The 'executiveSummary' should be a concise, encouraging paragraph (2-3 sentences) summarizing the opportunity.
-            - 'topCompetitors' should list 3 competitors with realistic photo/review counts and a specific, believable weakness (e.g., "inconsistent hours," "no recent photos," "poor review responses").
-            - 'opportunityGaps' should list 3-4 clear, actionable opportunities based on common local SEO mistakes.
-            - 'missingCategories' should list 3-5 specific, relevant GBP categories the business might be missing.
-            - 'photoStrategy' should list 5-7 concrete photo ideas.
-            - 'reviewStrategy' should list 3 actionable tips for getting more positive reviews.
-            - 'localDominationPlan' should provide a clear, 4-week plan with 2-3 distinct, actionable tasks per week.
-        `;
-
-        // --- JSON Schema for the AI's response ---
-        const schema = {
-            type: "OBJECT",
-            properties: {
-                executiveSummary: { type: "STRING" },
-                competitorAnalysis: {
-                    type: "OBJECT",
-                    properties: {
-                        topCompetitors: {
-                            type: "ARRAY",
-                            items: {
-                                type: "OBJECT",
-                                properties: {
-                                    name: { type: "STRING" },
-                                    estimatedPhotos: { type: "NUMBER" },
-                                    estimatedReviews: { type: "NUMBER" },
-                                    weakness: { type: "STRING" },
-                                },
-                                required: ["name", "estimatedPhotos", "estimatedReviews", "weakness"],
-                            },
-                        },
-                        opportunityGaps: { type: "ARRAY", items: { type: "STRING" } },
-                    },
-                     required: ["topCompetitors", "opportunityGaps"],
-                },
-                gmbOptimization: {
-                    type: "OBJECT",
-                    properties: {
-                        missingCategories: { type: "ARRAY", items: { type: "STRING" } },
-                        photoStrategy: { type: "ARRAY", items: { type: "STRING" } },
-                        reviewStrategy: { type: "ARRAY", items: { type: "STRING" } },
-                    },
-                    required: ["missingCategories", "photoStrategy", "reviewStrategy"],
-                },
-                localDominationPlan: {
-                    type: "OBJECT",
-                    properties: {
-                        week1: { type: "ARRAY", items: { type: "STRING" } },
-                        week2: { type: "ARRAY", items: { type: "STRING" } },
-                        week3: { type: "ARRAY", items: { type: "STRING" } },
-                        week4: { type: "ARRAY", items: { type: "STRING" } },
-                    },
-                    required: ["week1", "week2", "week3", "week4"],
-                },
-            },
-            required: ["executiveSummary", "competitorAnalysis", "gmbOptimization", "localDominationPlan"],
-        };
-        
-        const apiKey = ""; // This will be handled by the environment
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-        const payload = {
-            contents: [{ role: "user", parts: [{ text: prompt }] }],
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: schema,
-            },
-        };
-
-        // --- API Call with Exponential Backoff ---
         try {
-            let response;
-            let attempts = 0;
-            const maxAttempts = 5;
-            let delay = 1000;
+            // Call the local API endpoint (the proxy)
+            const response = await fetch('/api/generate-report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data), // Send the raw form data
+            });
 
-            while (attempts < maxAttempts) {
-                response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
-
-                if (response.ok) {
-                    break; // Success
-                }
-                
-                if (response.status === 429 || response.status >= 500) {
-                    // Throttled or server error, wait and retry
-                    attempts++;
-                    if (attempts >= maxAttempts) {
-                        throw new Error("The service is currently busy. Please try again later.");
-                    }
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; // Exponential backoff
-                } else {
-                    // Other client-side error
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || 'An unknown error occurred.');
-                }
+            if (!response.ok) {
+                // If the server responds with an error, capture it
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'An unknown error occurred.');
             }
 
-            const result = await response.json();
+            const report = await response.json();
+            setReportData(report);
+            setView('teaser'); // Go to the teaser page first
             
-            if (result.candidates && result.candidates.length > 0) {
-                const reportJson = result.candidates[0].content.parts[0].text;
-                const parsedReport = JSON.parse(reportJson);
-                setReportData(parsedReport);
-                setView('teaser');
-            } else {
-                 throw new Error("The AI failed to generate a report. The response was empty.");
-            }
-
         } catch (err) {
             console.error("Failed to generate report:", err);
             setError(err.message || "Failed to analyze local competition. This can happen during high traffic. Please try again.");
