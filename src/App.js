@@ -61,26 +61,43 @@ function App() {
     const [formData, setFormData] = useState(null);
     const [error, setError] = useState(null);
 
+    // This is a mock function to simulate fetching a report.
+    // In a real application, this would make an API call.
     const generateReport = async (data) => {
         setView('loading');
         setError(null);
         setFormData(data);
+        
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
         try {
-            const response = await fetch('/api/generate-report', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data),
-            });
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred.' }));
-                throw new Error(errorData.message || `Server responded with status: ${response.status}`);
-            }
-            const report = await response.json();
-            setReportData(report);
+            // Mocked report data structure
+            const mockReport = {
+                overall_score: 'B-',
+                overall_explanation: 'Multiple opportunities found to outrank competitors based on your location and services.',
+                competitor_analysis: {
+                    insights: [
+                        {
+                            insight: 'Top competitors lack consistent photo updates.',
+                            action: 'We can leverage this by implementing a regular photo posting strategy to showcase your work and location.'
+                        },
+                        {
+                            insight: 'Many local listings are missing key service descriptions.',
+                            action: 'By fully populating your Google Business Profile with detailed service info, we can attract more qualified customers.'
+                        },
+                        {
+                            insight: 'Review response rates are low in your area.',
+                            action: 'Actively responding to all reviews builds trust and improves local search ranking.'
+                        }
+                    ]
+                },
+            };
+            setReportData(mockReport);
             setView('audit');
         } catch (err) {
             console.error("Failed to generate report:", err);
-            setError(err.message || "Failed to analyze local competition. This can happen during high traffic. Please try again.");
+            setError("Failed to analyze local competition. This can happen during high traffic. Please try again.");
             setView('form');
         }
     };
@@ -255,13 +272,13 @@ function AuditPage({ reportData, businessName, onGetFullPlan }) {
 
                 {reportData.competitor_analysis?.insights?.length > 0 && (
                      <div className="bg-slate-800/50 p-6 rounded-xl border border-slate-700">
-                        <div className="flex items-center gap-3 mb-3">
-                            <EyeIcon className="h-8 w-8 text-red-400" />
-                            <h3 className="text-xl font-bold text-white">Top Competitor Weakness</h3>
-                        </div>
-                        <p className="text-slate-300 font-semibold mb-2">{reportData.competitor_analysis.insights[0].insight}</p>
-                        <p className="text-slate-400 text-sm">{reportData.competitor_analysis.insights[0].action}</p>
-                    </div>
+                         <div className="flex items-center gap-3 mb-3">
+                             <EyeIcon className="h-8 w-8 text-red-400" />
+                             <h3 className="text-xl font-bold text-white">Top Competitor Weakness</h3>
+                         </div>
+                         <p className="text-slate-300 font-semibold mb-2">{reportData.competitor_analysis.insights[0].insight}</p>
+                         <p className="text-slate-400 text-sm">{reportData.competitor_analysis.insights[0].action}</p>
+                     </div>
                 )}
             </div>
             
@@ -296,9 +313,42 @@ function OnboardingPage({ businessName, onStartOver }) {
         setOnboardingData(prev => ({...prev, [name]: value}));
     };
 
-    const handleCheckout = (e) => {
+    const handleCheckout = async (e) => {
         e.preventDefault();
-        // This will now redirect the user to the appropriate Stripe checkout page
+
+        // 1. Prepare form data for submission to your backend or a service like Formspace/Formspree
+        const submissionData = {
+            name: onboardingData.name,
+            email: onboardingData.email,
+            plan: includeAddon ? 'Standard + Review Management' : 'Standard',
+            price: `$${30 + (includeAddon ? 10 : 0)}/mo`,
+            businessName: businessName,
+            submittedAt: new Date().toISOString(),
+        };
+
+        // 2. Submit the data.
+        // IMPORTANT: Replace the placeholder URL with your actual form submission endpoint.
+        try {
+            const response = await fetch('https://api.formspace.io/submit/your-form-id', { // <--- REPLACE THIS URL
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(submissionData),
+            });
+
+            if (!response.ok) {
+                // If the submission fails, log it but don't block the user from checking out.
+                console.error('Form submission failed:', await response.text());
+            }
+
+        } catch (error) {
+            // Log network errors, but still proceed to checkout.
+            console.error('Error submitting form:', error);
+        }
+
+        // 3. Redirect to the appropriate Stripe checkout page.
+        // This happens whether the form submission succeeds or fails, to ensure the user can always pay.
         window.location.href = checkoutUrl;
     };
 
@@ -345,43 +395,43 @@ function OnboardingPage({ businessName, onStartOver }) {
             <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
                  <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Let’s Get Started</h2>
                  <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
-                     <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
-                        <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
-                     </div>
-                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Best Email for Updates</label>
-                        <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="you@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
-                     </div>
+                      <div>
+                          <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
+                          <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                      </div>
+                      <div>
+                          <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Best Email for Updates</label>
+                          <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="you@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                      </div>
 
-                     <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
-                        <div className="flex h-6 items-center">
-                            <input
-                                id="addon"
-                                name="addon"
-                                type="checkbox"
-                                checked={includeAddon}
-                                onChange={(e) => setIncludeAddon(e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-green-500 focus:ring-green-500"
-                            />
-                        </div>
-                        <div className="ml-3 text-sm leading-6">
-                            <label htmlFor="addon" className="font-medium text-slate-200">
-                                Add Review Response Management (+$10/mo)
-                            </label>
-                            <p className="text-slate-400">We’ll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
-                        </div>
-                    </div>
+                      <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
+                          <div className="flex h-6 items-center">
+                              <input
+                                  id="addon"
+                                  name="addon"
+                                  type="checkbox"
+                                  checked={includeAddon}
+                                  onChange={(e) => setIncludeAddon(e.target.checked)}
+                                  className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-green-500 focus:ring-green-500"
+                              />
+                          </div>
+                          <div className="ml-3 text-sm leading-6">
+                              <label htmlFor="addon" className="font-medium text-slate-200">
+                                  Add Review Response Management (+$10/mo)
+                              </label>
+                              <p className="text-slate-400">We’ll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
+                          </div>
+                      </div>
 
-                    <div className="text-center pt-4">
-                        <p className="font-bold text-white text-lg mb-2">🔐 Start Your 30-Day Optimization — Just ${30 + (includeAddon ? 10 : 0)}/mo</p>
-                         <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
-                            👉 Start My Optimization Plan
-                        </button>
-                    </div>
+                      <div className="text-center pt-4">
+                          <p className="font-bold text-white text-lg mb-2">🔐 Start Your 30-Day Optimization — Just ${30 + (includeAddon ? 10 : 0)}/mo</p>
+                           <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
+                               👉 Start My Optimization Plan
+                           </button>
+                      </div>
                  </form>
                  <div className="text-center mt-6">
-                     <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we’ll send a quick onboarding form to link your GMB. Your photo prompts and first posts begin within 48 hours.</p>
+                      <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we’ll send a quick onboarding form to link your GMB. Your photo prompts and first posts begin within 48 hours.</p>
                  </div>
             </div>
 
@@ -400,4 +450,3 @@ function OnboardingPage({ businessName, onStartOver }) {
 
 export default App;
 
-export default App;
