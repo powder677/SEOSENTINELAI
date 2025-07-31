@@ -316,7 +316,7 @@ function OnboardingPage({ businessName, onStartOver }) {
     const handleCheckout = async (e) => {
         e.preventDefault();
 
-        // 1. Prepare form data for submission to your backend or a service like Formspace/Formspree
+        // 1. Prepare form data for submission to your backend or a service like Formspree
         const submissionData = {
             name: onboardingData.name,
             email: onboardingData.email,
@@ -326,10 +326,9 @@ function OnboardingPage({ businessName, onStartOver }) {
             submittedAt: new Date().toISOString(),
         };
 
-        // 2. Submit the data.
-        // IMPORTANT: Replace the placeholder URL with your actual form submission endpoint.
+        // 2. Submit the data to your Formspree endpoint.
         try {
-            const response = await fetch('https://api.formspace.io/submit/your-form-id', { // <--- REPLACE THIS URL
+            const response = await fetch('https://formspree.io/f/mnnvldep', { // <--- UPDATED URL
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
