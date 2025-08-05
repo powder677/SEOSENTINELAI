@@ -1,7 +1,7 @@
 // Located at: /api/generate-report.js
 // Enhanced debug version with improved competitor filtering
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     // 1. --- Security and Method Check ---
     if (req.method !== 'POST') {
         res.setHeader('Allow', ['POST']);
@@ -277,3 +277,4 @@ export default async function handler(req, res) {
         });
     }
 }
+
