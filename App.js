@@ -34,23 +34,59 @@ const ZapIcon = ({ className }) => (
 );
 
 
+// --- STATIC DATA (Moved outside components to prevent re-creation on render) ---
+const loadingSteps = [
+    "Scanning Google for your Business Profile...",
+    "Analyzing Name, Address, Phone (NAP) consistency...",
+    "Auditing online reviews & competitor ratings...",
+    "Checking local keyword rankings in your area...",
+    "Assessing website authority & mobile experience...",
+    "Compiling your personalized growth plan..."
+];
+
+const headerNavLinks = [
+    { name: 'Features', id: 'features' },
+    { name: 'Pricing', id: 'pricing' },
+    { name: 'Blog', id: 'blog' },
+    { name: 'FAQ', id: 'faq' },
+];
+
+const features = [
+    { icon: <BotIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "AI-Powered Automation", description: "Our AI monitors your local SEO 24/7, automatically making improvements and alerting you to issues before they hurt your rankings." },
+    { icon: <BarChartIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "Simple Dashboard", description: "No confusing charts or technical jargon. See exactly how many customers found you this month and what we're doing to get you more." },
+    { icon: <TargetIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "Local-First Focus", description: "Built specifically for local businesses. We optimize for 'near me' searches and local map rankings, not generic SEO metrics." }
+];
+
+const blogPosts = [
+    { title: "Why Your Salon Suite Needs Its Own Google Business Profile", description: "You've invested in your own salon suite... But do you have your own Google Business Profile? If not, you're missing out on the biggest opportunity to attract new clients.", link: "#" },
+    { title: "5 Google My Business Mistakes Costing Salon Suite Owners Clients", description: "After analyzing hundreds of salon suite owners' profiles, we've identified five critical mistakes that are costing stylists thousands of dollars in lost revenue.", link: "#" },
+    { title: "How Salon Suite Owners Can Outrank Traditional Salons on Google", description: "Think you can't compete with established salons that have been around for decades? Think again. Salon suite owners actually have several advantages in local search.", link: "#" }
+];
+
+const faqs = [
+    { q: "Why can’t customers find me if I’m in a shared salon space?", a: "When you’re in a shared salon space, your business address is often the same as other professionals in the building. Without proper optimization, Google may not display your listing for searches, and customers could end up calling or visiting another business instead. Our service ensures your Google Business Profile is set up to stand out, even in shared or suite-style spaces, so people can find you directly." },
+    { q: "Can I get reviews for my business if I share the same address as other salon pros?", a: "Yes! Google allows multiple businesses at the same address, as long as each has its own unique name, phone number, and category. We help you set up your profile correctly so reviews go to your listing, not your neighbor’s." },
+    { q: "Will this help me show up for searches outside my immediate city?", a: "Yes. While Google prioritizes nearby results, our optimization strategies help expand your visibility to surrounding towns and neighborhoods where your ideal clients may live. This means you can get booked by people who are willing to travel for your services." },
+    { q: "I’ve tried posting before—why didn’t it work?", a: "Random posting without a clear strategy often gets buried in search results. Our AI-driven approach posts at the right times, uses optimized keywords, and aligns with what’s trending in your local area—so your posts actually drive clicks and bookings." },
+    { q: "What if I want to cancel?", a: "You can cancel your subscription at any time with no questions asked. There are no long-term contracts or cancellation fees. You own your Google Business Profile, so you'll keep all the improvements we've made." },
+];
+
+const onboardingDeliverables = [
+    { icon: "🗺️", action: "Fix Your Foundation (NAP & Citations)", description: "We'll correct all inconsistent business info across the web and build new citations, a critical step for ranking on Google Maps." },
+    { icon: "✍️", action: "Content That Ranks (GMB Posts)", description: "You get 4 professionally written, keyword-optimized Google Business Posts scheduled for you. You don't have to write a thing." },
+    { icon: "⭐", action: "Automate Your Reputation (Reviews)", description: "We'll set up a simple system for you to consistently get new reviews, a huge factor in customer trust and local ranking." },
+    { icon: "📊", action: "Outsmart Your Competition (Reporting)", description: "Receive a simple, jargon-free report showing your progress, keyword rankings, and how you stack up against the competition." },
+];
+
+
 // --- LOADING SPINNER COMPONENT ---
-// Displays an animated loading indicator while the API is fetching and analyzing data.
 const LoadingState = () => {
     const [currentStep, setCurrentStep] = useState(0);
-    const steps = [
-        "Scanning Google for your Business Profile...",
-        "Analyzing Name, Address, Phone (NAP) consistency...",
-        "Auditing online reviews & competitor ratings...",
-        "Checking local keyword rankings in your area...",
-        "Assessing website authority & mobile experience...",
-        "Compiling your personalized growth plan..."
-    ];
 
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentStep(prevStep => {
-                if (prevStep < steps.length - 1) {
+                if (prevStep < loadingSteps.length - 1) {
                     return prevStep + 1;
                 }
                 clearInterval(interval);
@@ -59,7 +95,7 @@ const LoadingState = () => {
         }, 1500);
 
         return () => clearInterval(interval);
-    }, [steps.length]);
+    }, []); // Empty dependency array ensures this effect runs only once.
 
     return (
         <div className="flex flex-col items-center justify-center space-y-4 min-h-[60vh] bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
@@ -70,7 +106,7 @@ const LoadingState = () => {
             <h3 className="text-2xl font-bold text-white">Building Your Local Dominance Report...</h3>
             <p className="text-slate-400">This may take up to 30 seconds as we analyze real-time local data.</p>
             <div className="mt-4 w-full max-w-md text-left">
-                {steps.map((step, index) => (
+                {loadingSteps.map((step, index) => (
                     <div key={index} className={`flex items-center gap-3 p-2 transition-all duration-500 ${currentStep >= index ? 'opacity-100' : 'opacity-40'}`}>
                         {currentStep > index ? (
                             <CheckCircleIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
@@ -88,7 +124,6 @@ const LoadingState = () => {
 };
 
 // --- HEADER & NAVIGATION ---
-// A responsive header with navigation links that scroll to different sections of the page.
 function Header() {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -100,20 +135,13 @@ function Header() {
         setIsOpen(false);
     };
 
-    const navLinks = [
-        { name: 'Features', id: 'features' },
-        { name: 'Pricing', id: 'pricing' },
-        { name: 'Blog', id: 'blog' },
-        { name: 'FAQ', id: 'faq' },
-    ];
-
     return (
         <header className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-800">
             <div className="container mx-auto px-4">
                 <div className="flex justify-between items-center py-4">
                     <div className="text-2xl font-bold text-blue-400">SEO Sentinel</div>
                     <nav className="hidden md:flex items-center gap-6">
-                        {navLinks.map(link => (
+                        {headerNavLinks.map(link => (
                             <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-slate-300 hover:text-blue-400 transition-colors">{link.name}</button>
                         ))}
                     </nav>
@@ -131,7 +159,7 @@ function Header() {
                 {isOpen && (
                     <div className="md:hidden pb-4">
                         <nav className="flex flex-col gap-4 items-center">
-                             {navLinks.map(link => (
+                             {headerNavLinks.map(link => (
                                  <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-slate-300 hover:text-blue-400 transition-colors py-2">{link.name}</button>
                              ))}
                             <button onClick={() => scrollToSection('gmb-check')} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors mt-2">
@@ -145,10 +173,7 @@ function Header() {
     );
 }
 
-// --- DETAILED AUDIT REPORT COMPONENT (Handles Real API Data) ---
-// This component now correctly handles the two main scenarios from the API:
-// 1. Business is NOT found, showing critical visibility issues.
-// 2. Business IS found, showing a detailed analysis and optimization plan.
+// --- DETAILED AUDIT REPORT COMPONENT ---
 function DetailedAuditReport({ reportData, onGetFullPlan }) {
     if (!reportData) return <div className="text-center py-20">Analysis failed. Please start over.</div>;
 
@@ -343,7 +368,6 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 
 
 // --- FORM COMPONENT ---
-// A detailed form to capture all necessary information for a comprehensive SEO audit.
 function LocalSeoForm({ onSubmit, error }) {
     const [formData, setFormData] = useState({
         businessName: '',
@@ -432,7 +456,6 @@ function LocalSeoForm({ onSubmit, error }) {
 
 
 // --- ONBOARDING PAGE COMPONENT ---
-// The final step where a user can sign up for the paid plan.
 function OnboardingPage({ businessName, onStartOver }) {
     const [includeAddon, setIncludeAddon] = useState(false);
     const [onboardingData, setOnboardingData] = useState({ name: '', email: '' });
@@ -454,7 +477,7 @@ function OnboardingPage({ businessName, onStartOver }) {
         
         const submissionData = {
              name: onboardingData.name,
-             email: onboardingData.email, // Using email from local state
+             email: onboardingData.email,
              plan: includeAddon ? 'Standard + Review Management' : 'Standard',
              price: `$${basePrice + (includeAddon ? addonPrice : 0)}/mo`,
              businessName: businessName,
@@ -462,27 +485,17 @@ function OnboardingPage({ businessName, onStartOver }) {
          };
 
         try {
-            const response = await fetch('https://formspree.io/f/mnnvldep', {
+            await fetch('https://formspree.io/f/mnnvldep', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(submissionData),
             });
-            if (!response.ok) {
-                console.error('Form submission failed:', await response.text());
-            }
         } catch (error) {
             console.error('Error submitting form:', error);
         }
         
         window.location.href = checkoutUrl;
     };
-
-    const deliverables = [
-        { icon: "🗺️", action: "Fix Your Foundation (NAP & Citations)", description: "We'll correct all inconsistent business info across the web and build new citations, a critical step for ranking on Google Maps." },
-        { icon: "✍️", action: "Content That Ranks (GMB Posts)", description: "You get 4 professionally written, keyword-optimized Google Business Posts scheduled for you. You don't have to write a thing." },
-        { icon: "⭐", action: "Automate Your Reputation (Reviews)", description: "We'll set up a simple system for you to consistently get new reviews, a huge factor in customer trust and local ranking." },
-        { icon: "📊", action: "Outsmart Your Competition (Reporting)", description: "Receive a simple, jargon-free report showing your progress, keyword rankings, and how you stack up against the competition." },
-    ];
 
     return (
         <div className="max-w-4xl mx-auto animate-fade-in">
@@ -494,7 +507,7 @@ function OnboardingPage({ businessName, onStartOver }) {
             <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 mb-10">
                 <h2 className="text-2xl font-bold text-center text-blue-400 mb-6">📦 Your Monthly Local Growth Engine</h2>
                 <div className="space-y-6">
-                    {deliverables.map(item => (
+                    {onboardingDeliverables.map(item => (
                         <div key={item.action} className="flex items-start gap-4">
                             <div className="text-3xl mt-1">{item.icon}</div>
                             <div>
@@ -550,8 +563,6 @@ function OnboardingPage({ businessName, onStartOver }) {
 
 
 // --- HERO AND AUDIT FORM SECTION ---
-// This is the main interactive component that manages the state between the
-// form, loading screen, audit report, and onboarding page.
 function HeroAndAuditSection() {
     const [view, setView] = useState('form'); // 'form', 'loading', 'audit', 'report'
     const [reportData, setReportData] = useState(null);
@@ -566,7 +577,7 @@ function HeroAndAuditSection() {
         try {
             // Submit lead data to a service like Formspree first.
             try {
-                fetch('https://formspree.io/f/mnnvldep', {
+                await fetch('https://formspree.io/f/mnnvldep', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -576,11 +587,9 @@ function HeroAndAuditSection() {
                 });
             } catch (formspreeError) {
                 console.error("Could not submit lead to Formspree:", formspreeError);
-                // Don't block the user if this fails.
             }
 
             // Call the backend API to generate the report.
-            // NOTE: This assumes you have a Next.js-style API route at /api/generate-report
             const response = await fetch('/api/generate-report', {
                 method: 'POST',
                 headers: {
@@ -596,7 +605,6 @@ function HeroAndAuditSection() {
 
             const result = await response.json();
             
-            // Set the raw data from the API directly into state
             setReportData(result);
             setView('audit');
 
@@ -623,7 +631,6 @@ function HeroAndAuditSection() {
                 return <DetailedAuditReport reportData={reportData} onGetFullPlan={handleGetFullPlan} />;
             case 'report':
                 return <OnboardingPage 
-                    reportData={reportData} 
                     businessName={formData.businessName} 
                     onStartOver={handleStartOver} 
                 />;
@@ -644,15 +651,8 @@ function HeroAndAuditSection() {
 
 
 // --- STATIC CONTENT SECTIONS ---
-// These are the informational sections of the landing page.
 
 function FeaturesSection() {
-    const features = [
-        { icon: <BotIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "AI-Powered Automation", description: "Our AI monitors your local SEO 24/7, automatically making improvements and alerting you to issues before they hurt your rankings." },
-        { icon: <BarChartIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "Simple Dashboard", description: "No confusing charts or technical jargon. See exactly how many customers found you this month and what we're doing to get you more." },
-        { icon: <TargetIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "Local-First Focus", description: "Built specifically for local businesses. We optimize for 'near me' searches and local map rankings, not generic SEO metrics." }
-    ];
-
     return (
         <section id="features" className="py-16 md:py-24 bg-slate-900/70">
             <div className="container mx-auto px-4">
@@ -704,18 +704,12 @@ function PricingSection() {
 }
 
 function BlogSection() {
-    const posts = [
-        { title: "Why Your Salon Suite Needs Its Own Google Business Profile", description: "You've invested in your own salon suite... But do you have your own Google Business Profile? If not, you're missing out on the biggest opportunity to attract new clients.", link: "#" },
-        { title: "5 Google My Business Mistakes Costing Salon Suite Owners Clients", description: "After analyzing hundreds of salon suite owners' profiles, we've identified five critical mistakes that are costing stylists thousands of dollars in lost revenue.", link: "#" },
-        { title: "How Salon Suite Owners Can Outrank Traditional Salons on Google", description: "Think you can't compete with established salons that have been around for decades? Think again. Salon suite owners actually have several advantages in local search.", link: "#" }
-    ];
-
     return (
         <section id="blog" className="py-16 md:py-24 bg-slate-900/70">
             <div className="container mx-auto px-4">
                 <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Latest Local SEO Tips for Salon Suite Owners</h2>
                 <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {posts.map((post, index) => (
+                    {blogPosts.map((post, index) => (
                         <div key={index} className="bg-slate-800 rounded-xl p-6 border border-slate-700 group transition-all duration-300 hover:border-blue-500 hover:-translate-y-1">
                             <h3 className="text-lg font-bold text-white mb-2">{post.title}</h3>
                             <p className="text-slate-400 mb-4 text-sm">{post.description}</p>
@@ -729,17 +723,6 @@ function BlogSection() {
 }
 
 function FAQSection() {
-    const faqs = [
-        { q: "Why can’t customers find me if I’m in a shared salon space?", a: "When you’re in a shared salon space, your business address is often the same as other professionals in the building. Without proper optimization, Google may not display your listing for searches, and customers could end up calling or visiting another business instead. Our service ensures your Google Business Profile is set up to stand out, even in shared or suite-style spaces, so people can find you directly." },
-        { q: "Can I get reviews for my business if I share the same address as other salon pros?", a: "Yes! Google allows multiple businesses at the same address, as long as each has its own unique name, phone number, and category. We help you set up your profile correctly so reviews go to your listing, not your neighbor’s." },
-        { q: "Will this help me show up for searches outside my immediate city?", a: "Yes. While Google prioritizes nearby results, our optimization strategies help expand your visibility to surrounding towns and neighborhoods where your ideal clients may live. This means you can get booked by people who are willing to travel for your services." },
-        { q: "I’ve tried posting before—why didn’t it work?", a: "Random posting without a clear strategy often gets buried in search results. Our AI-driven approach posts at the right times, uses optimized keywords, and aligns with what’s trending in your local area—so your posts actually drive clicks and bookings." },
-        { q: "What exactly is local SEO?", a: "Local SEO is the process of optimizing your online presence to attract more business from relevant local searches. These are the searches that happen when people are looking for products and services 'near me' or in a specific location." },
-        { q: "Do I need a website to use this service?", a: "No! Our service is designed to optimize your Google Business Profile, which is a free listing that appears in Google Search and Maps. While a website can help, our primary focus is on making your GMB listing as powerful as possible to attract customers directly." },
-        { q: "How long does it take to see results?", a: "While every market is different, most of our clients start seeing a noticeable increase in calls, website clicks, and direction requests within the first 30-60 days. SEO is a long-term strategy, and the results build over time." },
-        { q: "What if I want to cancel?", a: "You can cancel your subscription at any time with no questions asked. There are no long-term contracts or cancellation fees. You own your Google Business Profile, so you'll keep all the improvements we've made." },
-    ];
-
     return (
         <section id="faq" className="py-16 md:py-24 bg-slate-900">
             <div className="container mx-auto px-4">
@@ -812,7 +795,6 @@ function Footer() {
 }
 
 // --- MAIN APP COMPONENT ---
-// This component assembles the entire landing page from all the other components.
 function App() {
     return (
         <div className="bg-slate-900 min-h-screen text-white font-sans">
