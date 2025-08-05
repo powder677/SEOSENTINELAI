@@ -462,8 +462,9 @@ function OnboardingPage({ businessName, onStartOver }) {
     const basePrice = 30;
     const addonPrice = 10;
 
-    const baseCheckoutUrl = "https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i";
-    const addonCheckoutUrl = "https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h";
+    // NOTE: These are placeholder Stripe links. Replace with your actual links.
+    const baseCheckoutUrl = "https://buy.stripe.com/test_28o3dIe9OaUe5W0bII";
+    const addonCheckoutUrl = "https://buy.stripe.com/test_7sI6tUa1Cgco2FUfZ1";
 
     const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
 
@@ -485,6 +486,7 @@ function OnboardingPage({ businessName, onStartOver }) {
          };
 
         try {
+            // This sends the lead data to a form backend before redirecting to checkout.
             await fetch('https://formspree.io/f/mnnvldep', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -492,8 +494,10 @@ function OnboardingPage({ businessName, onStartOver }) {
             });
         } catch (error) {
             console.error('Error submitting form:', error);
+            // We can still proceed to checkout even if the form submission fails.
         }
         
+        // Redirect to Stripe checkout
         window.location.href = checkoutUrl;
     };
 
@@ -522,33 +526,33 @@ function OnboardingPage({ businessName, onStartOver }) {
             <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
                  <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Activate Your Plan</h2>
                  <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
-                     <div>
-                         <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
-                         <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
-                     </div>
-                     <div>
+                      <div>
+                           <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
+                           <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                      </div>
+                      <div>
                         <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
                         <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="e.g., jane.doe@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
-                     </div>
-                     <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
-                         <div className="flex h-6 items-center">
-                             <input id="addon" name="addon" type="checkbox" checked={includeAddon} onChange={(e) => setIncludeAddon(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-green-500 focus:ring-green-500" />
-                         </div>
-                         <div className="ml-3 text-sm leading-6">
-                             <label htmlFor="addon" className="font-medium text-slate-200">Add "Done-For-You" Review Responses (+${addonPrice}/mo)</label>
-                             <p className="text-slate-400">We'll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
-                         </div>
-                     </div>
+                      </div>
+                      <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
+                           <div className="flex h-6 items-center">
+                               <input id="addon" name="addon" type="checkbox" checked={includeAddon} onChange={(e) => setIncludeAddon(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-green-500 focus:ring-green-500" />
+                           </div>
+                           <div className="ml-3 text-sm leading-6">
+                               <label htmlFor="addon" className="font-medium text-slate-200">Add "Done-For-You" Review Responses (+${addonPrice}/mo)</label>
+                               <p className="text-slate-400">We'll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
+                           </div>
+                      </div>
 
-                     <div className="text-center pt-4">
-                         <p className="font-bold text-white text-lg mb-2">🔐 Start Your 30-Day Risk-Free Trial — Just ${basePrice + (includeAddon ? addonPrice : 0)}/mo</p>
-                         <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
-                                 👉 Activate My Growth Plan
-                         </button>
-                     </div>
+                      <div className="text-center pt-4">
+                           <p className="font-bold text-white text-lg mb-2">🔐 Start Your 30-Day Risk-Free Trial — Just ${basePrice + (includeAddon ? addonPrice : 0)}/mo</p>
+                           <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
+                                   👉 Activate My Growth Plan
+                           </button>
+                      </div>
                  </form>
                  <div className="text-center mt-6">
-                     <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we'll send a quick onboarding form to link your GMB. Your first optimizations will begin within 48 hours.</p>
+                      <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we'll send a quick onboarding form to link your GMB. Your first optimizations will begin within 48 hours.</p>
                  </div>
             </div>
 
@@ -574,43 +578,205 @@ function HeroAndAuditSection() {
         setError(null);
         setFormData(data);
         
+        // Submit lead data to Formspree first for tracking.
         try {
-            // Submit lead data to a service like Formspree first.
-            try {
-                await fetch('https://formspree.io/f/mnnvldep', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        formName: "Free SEO Audit Lead",
-                        ...data
-                    }),
-                });
-            } catch (formspreeError) {
-                console.error("Could not submit lead to Formspree:", formspreeError);
-            }
-
-            // Call the backend API to generate the report.
-            const response = await fetch('/api/generate-report', {
+            await fetch('https://formspree.io/f/mnnvldep', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    formName: "Free SEO Audit Lead",
+                    ...data
+                }),
+            });
+        } catch (formspreeError) {
+            console.error("Could not submit lead to Formspree:", formspreeError);
+            // Non-critical error, so we continue.
+        }
+
+        // --- Gemini API Call ---
+        const prompt = `
+            You are an expert Local SEO Analyst. Your task is to generate a detailed, realistic, and compelling local SEO audit report for a small business.
+            The report should be structured as a JSON object. Based on the business details, decide if the business is likely to be found on Google Maps.
+            
+            **Business Details:**
+            - Business Name: "${data.businessName}"
+            - Business Type: ${data.businessType}
+            - Address: ${data.streetAddress}, ${data.location}
+            - Biggest Challenge: ${data.biggestChallenge}
+
+            **Instructions:**
+            1.  **Analyze Visibility:** Based on the business name and address, determine if it's a "discoverable" business (likely has a Google Business Profile) or an "undiscoverable" one (e.g., a generic name, a suite in a large building, a service area business without a clear address). This is the most important decision.
+            2.  **Generate "Not Found" Report:** If you decide the business is undiscoverable or has critical issues, set "business_found" to \`false\`. Create a report that highlights major problems like NAP inconsistency, lack of a profile, and the direct revenue impact. The tone should be urgent and problem-focused.
+            3.  **Generate "Found" Report:** If you decide the business is discoverable, set "business_found" to \`true\`. Create a report that focuses on optimization opportunities. Compare them to typical local competitors and provide a graded score (A, B, C, etc.). The tone should be encouraging but highlight clear areas for improvement.
+            4.  **Fill the JSON:** Populate ALL fields in the appropriate JSON structure based on your decision. Make the content specific, actionable, and tailored to the business type. For example, a plumber's competitors are different from a salon's.
+            5.  **Output JSON:** Respond ONLY with the raw JSON object that conforms to the provided schema. Do not include any other text, markdown, or explanations.
+        `;
+
+        const reportSchema = {
+            type: "OBJECT",
+            properties: {
+                "business_found": { "type": "BOOLEAN" },
+                "overall_score": { "type": "STRING" },
+                "overall_explanation": { "type": "STRING" },
+                // Fields for "business_found": false
+                "visibility_analysis": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "issues": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "problem": { "type": "STRING" },
+                                    "impact": { "type": "STRING" },
+                                    "urgency": { "type": "STRING", "enum": ["CRITICAL", "HIGH", "MEDIUM"] }
+                                }
+                            }
+                        }
+                    }
                 },
-                body: JSON.stringify(data),
+                "competitor_reality_check": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "summary": { "type": "STRING" },
+                        "top_competitors": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "name": { "type": "STRING" },
+                                    "rating": { "type": "NUMBER" },
+                                    "reviews": { "type": "NUMBER" },
+                                    "advantage": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "revenue_impact": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "monthly_lost_leads": { "type": "NUMBER" },
+                        "avg_job_value": { "type": "NUMBER" }
+                    }
+                },
+                "immediate_action_plan": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "priority_actions": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "action": { "type": "STRING" },
+                                    "impact": { "type": "STRING" },
+                                    "timeframe": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                },
+                // Fields for "business_found": true
+                "profile_analysis": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "issues": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "problem": { "type": "STRING" },
+                                    "impact": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "competitor_comparison": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "your_stats": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "rating": { "type": "NUMBER" },
+                                "reviews": { "type": "NUMBER" },
+                                "photos": { "type": "NUMBER" }
+                            }
+                        },
+                        "competitor_averages": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "rating": { "type": "NUMBER" },
+                                "reviews": { "type": "NUMBER" },
+                                "advantage_areas": { "type": "ARRAY", "items": { "type": "STRING" } }
+                            }
+                        }
+                    }
+                },
+                "optimization_plan": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "priority_fixes": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "fix": { "type": "STRING" },
+                                    "why": { "type": "STRING" },
+                                    "timeline": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        try {
+            const apiKey = ""; // This will be handled by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: reportSchema,
+                },
+            };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
             });
 
             if (!response.ok) {
                 const errorResult = await response.json();
-                throw new Error(errorResult.error || 'Failed to generate the report.');
+                console.error("API Error Response:", errorResult);
+                throw new Error(errorResult.error?.message || 'The AI model failed to generate a valid report.');
             }
 
             const result = await response.json();
             
-            setReportData(result);
-            setView('audit');
+            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                const jsonText = result.candidates[0].content.parts[0].text;
+                const parsedJson = JSON.parse(jsonText);
+                setReportData(parsedJson);
+                setView('audit');
+            } else {
+                throw new Error("Received an empty or invalid response from the AI model.");
+            }
 
         } catch (err) {
-            console.error("Failed to generate report:", err);
-            setError(err.message || "An unknown error occurred. Please try again.");
+            console.error("Failed to generate report with Gemini:", err);
+            setError(err.message || "An unknown error occurred while generating the AI report. Please try again.");
             setView('form');
         }
     };
@@ -643,7 +809,7 @@ function HeroAndAuditSection() {
     return (
         <section id="gmb-check" className="py-16 md:py-24">
              <div className="container mx-auto px-4">
-                {renderView()}
+                 {renderView()}
             </div>
         </section>
     );
