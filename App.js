@@ -64,10 +64,10 @@ const blogPosts = [
 ];
 
 const faqs = [
-    { q: "Why can’t customers find me if I’m in a shared salon space?", a: "When you’re in a shared salon space, your business address is often the same as other professionals in the building. Without proper optimization, Google may not display your listing for searches, and customers could end up calling or visiting another business instead. Our service ensures your Google Business Profile is set up to stand out, even in shared or suite-style spaces, so people can find you directly." },
-    { q: "Can I get reviews for my business if I share the same address as other salon pros?", a: "Yes! Google allows multiple businesses at the same address, as long as each has its own unique name, phone number, and category. We help you set up your profile correctly so reviews go to your listing, not your neighbor’s." },
+    { q: "Why can't customers find me if I'm in a shared salon space?", a: "When you're in a shared salon space, your business address is often the same as other professionals in the building. Without proper optimization, Google may not display your listing for searches, and customers could end up calling or visiting another business instead. Our service ensures your Google Business Profile is set up to stand out, even in shared or suite-style spaces, so people can find you directly." },
+    { q: "Can I get reviews for my business if I share the same address as other salon pros?", a: "Yes! Google allows multiple businesses at the same address, as long as each has its own unique name, phone number, and category. We help you set up your profile correctly so reviews go to your listing, not your neighbor's." },
     { q: "Will this help me show up for searches outside my immediate city?", a: "Yes. While Google prioritizes nearby results, our optimization strategies help expand your visibility to surrounding towns and neighborhoods where your ideal clients may live. This means you can get booked by people who are willing to travel for your services." },
-    { q: "I’ve tried posting before—why didn’t it work?", a: "Random posting without a clear strategy often gets buried in search results. Our AI-driven approach posts at the right times, uses optimized keywords, and aligns with what’s trending in your local area—so your posts actually drive clicks and bookings." },
+    { q: "I've tried posting before—why didn't it work?", a: "Random posting without a clear strategy often gets buried in search results. Our AI-driven approach posts at the right times, uses optimized keywords, and aligns with what's trending in your local area—so your posts actually drive clicks and bookings." },
     { q: "What if I want to cancel?", a: "You can cancel your subscription at any time with no questions asked. There are no long-term contracts or cancellation fees. You own your Google Business Profile, so you'll keep all the improvements we've made." },
 ];
 
@@ -479,7 +479,7 @@ function OnboardingPage({ businessName, onStartOver }) {
              name: onboardingData.name,
              email: onboardingData.email,
              plan: includeAddon ? 'Standard + Review Management' : 'Standard',
-             price: `$${basePrice + (includeAddon ? addonPrice : 0)}/mo`,
+             price: `${basePrice + (includeAddon ? addonPrice : 0)}/mo`,
              businessName: businessName,
              submittedAt: new Date().toISOString(),
          };
@@ -501,7 +501,7 @@ function OnboardingPage({ businessName, onStartOver }) {
         <div className="max-w-4xl mx-auto animate-fade-in">
             <div className="text-center mb-10">
                 <h1 className="text-4xl md:text-5xl font-bold text-white">✅ Yes! I Want More Local Customers.</h1>
-                <p className="text-xl text-slate-300 mt-4">Here’s your monthly "Done-For-You" local growth engine for <span className="text-blue-400 font-bold">{businessName}</span>:</p>
+                <p className="text-xl text-slate-300 mt-4">Here's your monthly "Done-For-You" local growth engine for <span className="text-blue-400 font-bold">{businessName}</span>:</p>
             </div>
 
             <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 mb-10">
@@ -536,7 +536,7 @@ function OnboardingPage({ businessName, onStartOver }) {
                          </div>
                          <div className="ml-3 text-sm leading-6">
                              <label htmlFor="addon" className="font-medium text-slate-200">Add "Done-For-You" Review Responses (+${addonPrice}/mo)</label>
-                             <p className="text-slate-400">We’ll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
+                             <p className="text-slate-400">We'll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
                          </div>
                      </div>
 
@@ -548,7 +548,7 @@ function OnboardingPage({ businessName, onStartOver }) {
                      </div>
                  </form>
                  <div className="text-center mt-6">
-                     <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we’ll send a quick onboarding form to link your GMB. Your first optimizations will begin within 48 hours.</p>
+                     <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we'll send a quick onboarding form to link your GMB. Your first optimizations will begin within 48 hours.</p>
                  </div>
             </div>
 
@@ -569,7 +569,7 @@ function HeroAndAuditSection() {
     const [formData, setFormData] = useState(null);
     const [error, setError] = useState(null);
 
-    const generate-Report = async (data) => {
+    const generateReport = async (data) => {
         setView('loading');
         setError(null);
         setFormData(data);
