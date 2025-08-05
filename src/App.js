@@ -1,118 +1,191 @@
-// ===== SIMPLIFIED FORM COMPONENT =====
-function LocalSeoForm({ onSubmit, error }) {
-    const [formData, setFormData] = useState({
-        businessName: '',
-        businessType: 'Plumber',
-        location: '',
-        email: ''
-    });
+import React from 'react';
+// Explicitly destructuring hooks from the React object to address potential build issues.
+const { useState, useEffect } = React;
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+// --- HELPER ICONS ---
+// A collection of SVG icons used throughout the application for a consistent look and feel.
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSubmit(formData);
+const CheckCircleIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
+const MenuIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+);
+
+const XIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+);
+
+const BotIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
+);
+
+const TargetIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+);
+
+const BarChartIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+);
+
+const ZapIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+);
+
+
+// --- STATIC DATA (Moved outside components to prevent re-creation on render) ---
+const loadingSteps = [
+    "Scanning Google for your Business Profile...",
+    "Analyzing Name, Address, Phone (NAP) consistency...",
+    "Auditing online reviews & competitor ratings...",
+    "Checking local keyword rankings in your area...",
+    "Assessing website authority & mobile experience...",
+    "Compiling your personalized growth plan..."
+];
+
+const headerNavLinks = [
+    { name: 'Features', id: 'features' },
+    { name: 'Pricing', id: 'pricing' },
+    { name: 'Blog', id: 'blog' },
+    { name: 'FAQ', id: 'faq' },
+];
+
+const features = [
+    { icon: <BotIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "AI-Powered Automation", description: "Our AI monitors your local SEO 24/7, automatically making improvements and alerting you to issues before they hurt your rankings." },
+    { icon: <BarChartIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "Simple Dashboard", description: "No confusing charts or technical jargon. See exactly how many customers found you this month and what we're doing to get you more." },
+    { icon: <TargetIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "Local-First Focus", description: "Built specifically for local businesses. We optimize for 'near me' searches and local map rankings, not generic SEO metrics." }
+];
+
+const blogPosts = [
+    { title: "Why Your Salon Suite Needs Its Own Google Business Profile", description: "You've invested in your own salon suite... But do you have your own Google Business Profile? If not, you're missing out on the biggest opportunity to attract new clients.", link: "#" },
+    { title: "5 Google My Business Mistakes Costing Salon Suite Owners Clients", description: "After analyzing hundreds of salon suite owners' profiles, we've identified five critical mistakes that are costing stylists thousands of dollars in lost revenue.", link: "#" },
+    { title: "How Salon Suite Owners Can Outrank Traditional Salons on Google", description: "Think you can't compete with established salons that have been around for decades? Think again. Salon suite owners actually have several advantages in local search.", link: "#" }
+];
+
+const faqs = [
+    { q: "Why can't customers find me if I'm in a shared salon space?", a: "When you're in a shared salon space, your business address is often the same as other professionals in the building. Without proper optimization, Google may not display your listing for searches, and customers could end up calling or visiting another business instead. Our service ensures your Google Business Profile is set up to stand out, even in shared or suite-style spaces, so people can find you directly." },
+    { q: "Can I get reviews for my business if I share the same address as other salon pros?", a: "Yes! Google allows multiple businesses at the same address, as long as each has its own unique name, phone number, and category. We help you set up your profile correctly so reviews go to your listing, not your neighbor's." },
+    { q: "Will this help me show up for searches outside my immediate city?", a: "Yes. While Google prioritizes nearby results, our optimization strategies help expand your visibility to surrounding towns and neighborhoods where your ideal clients may live. This means you can get booked by people who are willing to travel for your services." },
+    { q: "I've tried posting before—why didn't it work?", a: "Random posting without a clear strategy often gets buried in search results. Our AI-driven approach posts at the right times, uses optimized keywords, and aligns with what's trending in your local area—so your posts actually drive clicks and bookings." },
+    { q: "What if I want to cancel?", a: "You can cancel your subscription at any time with no questions asked. There are no long-term contracts or cancellation fees. You own your Google Business Profile, so you'll keep all the improvements we've made." },
+];
+
+const onboardingDeliverables = [
+    { icon: "🗺️", action: "Fix Your Foundation (NAP & Citations)", description: "We'll correct all inconsistent business info across the web and build new citations, a critical step for ranking on Google Maps." },
+    { icon: "✍️", action: "Content That Ranks (GMB Posts)", description: "You get 4 professionally written, keyword-optimized Google Business Posts scheduled for you. You don't have to write a thing." },
+    { icon: "⭐", action: "Automate Your Reputation (Reviews)", description: "We'll set up a simple system for you to consistently get new reviews, a huge factor in customer trust and local ranking." },
+    { icon: "📊", action: "Outsmart Your Competition (Reporting)", description: "Receive a simple, jargon-free report showing your progress, keyword rankings, and how you stack up against the competition." },
+];
+
+
+// --- LOADING SPINNER COMPONENT ---
+const LoadingState = () => {
+    const [currentStep, setCurrentStep] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentStep(prevStep => {
+                if (prevStep < loadingSteps.length - 1) {
+                    return prevStep + 1;
+                }
+                clearInterval(interval);
+                return prevStep;
+            });
+        }, 1500);
+
+        return () => clearInterval(interval);
+    }, []); // Empty dependency array ensures this effect runs only once.
+
+    return (
+        <div className="flex flex-col items-center justify-center space-y-4 min-h-[60vh] bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
+            <svg className="animate-spin h-12 w-12 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <h3 className="text-2xl font-bold text-white">Building Your Local Dominance Report...</h3>
+            <p className="text-slate-400">This may take up to 30 seconds as we analyze real-time local data.</p>
+            <div className="mt-4 w-full max-w-md text-left">
+                {loadingSteps.map((step, index) => (
+                    <div key={index} className={`flex items-center gap-3 p-2 transition-all duration-500 ${currentStep >= index ? 'opacity-100' : 'opacity-40'}`}>
+                        {currentStep > index ? (
+                            <CheckCircleIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
+                        ) : currentStep === index ? (
+                            <div className="w-5 h-5 flex-shrink-0"><div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse mt-1.5 ml-1.5"></div></div>
+                        ) : (
+                            <div className="w-5 h-5 flex-shrink-0"><div className="w-2 h-2 bg-slate-600 rounded-full mt-1.5 ml-1.5"></div></div>
+                        )}
+                        <span className={`${currentStep === index ? 'text-blue-400 font-semibold' : currentStep > index ? 'text-green-400' : 'text-slate-500'}`}>{step}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+// --- HEADER & NAVIGATION ---
+function Header() {
+    const [isOpen, setIsOpen] = useState(false);
+
+    const scrollToSection = (id) => {
+        const section = document.getElementById(id);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+        setIsOpen(false);
     };
 
     return (
-        <div className="max-w-2xl mx-auto animate-fade-in">
-            <div className="text-center mb-8">
-                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Are You Invisible to Local Customers?</h1>
-                <p className="text-xl md:text-2xl text-slate-300">Get a free audit that reveals if customers can actually find your business online.</p>
+        <header className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-800">
+            <div className="container mx-auto px-4">
+                <div className="flex justify-between items-center py-4">
+                    <div className="text-2xl font-bold text-blue-400">SEO Sentinel</div>
+                    <nav className="hidden md:flex items-center gap-6">
+                        {headerNavLinks.map(link => (
+                            <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-slate-300 hover:text-blue-400 transition-colors">{link.name}</button>
+                        ))}
+                    </nav>
+                    <div className="hidden md:block">
+                        <button onClick={() => scrollToSection('gmb-check')} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                            Get Free Audit
+                        </button>
+                    </div>
+                    <div className="md:hidden">
+                        <button onClick={() => setIsOpen(!isOpen)} className="text-slate-300">
+                            {isOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+                        </button>
+                    </div>
+                </div>
+                {isOpen && (
+                    <div className="md:hidden pb-4">
+                        <nav className="flex flex-col gap-4 items-center">
+                             {headerNavLinks.map(link => (
+                                 <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-slate-300 hover:text-blue-400 transition-colors py-2">{link.name}</button>
+                             ))}
+                            <button onClick={() => scrollToSection('gmb-check')} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors mt-2">
+                                Get Free Audit
+                            </button>
+                        </nav>
+                    </div>
+                )}
             </div>
-            
-            {error && (
-                <div className="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg mb-6 text-center">
-                    <p className="font-bold">Oops! Something went wrong.</p>
-                    <p>{error}</p>
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                        <label htmlFor="businessName" className="block text-sm font-medium text-slate-300 mb-2">Business Name *</label>
-                        <input 
-                            type="text" 
-                            id="businessName" 
-                            name="businessName" 
-                            value={formData.businessName} 
-                            onChange={handleChange} 
-                            placeholder="e.g., Tony's Plumbing" 
-                            className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" 
-                            required 
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="businessType" className="block text-sm font-medium text-slate-300 mb-2">Business Type *</label>
-                        <select 
-                            id="businessType" 
-                            name="businessType" 
-                            value={formData.businessType} 
-                            onChange={handleChange} 
-                            className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" 
-                            required
-                        >
-                             <option value="Plumber">Plumber</option>
-                             <option value="Electrician">Electrician</option>
-                             <option value="HVAC">HVAC</option>
-                             <option value="Roofer">Roofer</option>
-                             <option value="Landscaper">Landscaper</option>
-                             <option value="Dentist">Dentist</option>
-                             <option value="Restaurant">Restaurant</option>
-                             <option value="Auto Repair">Auto Repair</option>
-                             <option value="Other">Other</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div>
-                    <label htmlFor="location" className="block text-sm font-medium text-slate-300 mb-2">City, State *</label>
-                    <input 
-                        type="text" 
-                        id="location" 
-                        name="location" 
-                        value={formData.location} 
-                        onChange={handleChange} 
-                        placeholder="e.g., Philadelphia, PA" 
-                        className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" 
-                        required 
-                    />
-                </div>
-                
-                <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Email Address *</label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        value={formData.email} 
-                        onChange={handleChange} 
-                        placeholder="Where should we send your free report?" 
-                        className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" 
-                        required 
-                    />
-                </div>
-                
-                <button type="submit" className="w-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30">
-                    🔍 Check My Business Visibility
-                </button>
-                
-                <p className="text-xs text-slate-500 text-center">Takes 30 seconds. We'll show you exactly what customers see when they search for your services.</p>
-            </form>
-        </div>
+        </header>
     );
 }
 
-// ===== UPDATED REACT COMPONENT TO HANDLE REAL DATA =====
+// --- DETAILED AUDIT REPORT COMPONENT ---
 function DetailedAuditReport({ reportData, onGetFullPlan }) {
+    // This component is now more robust against incomplete AI-generated data.
     if (!reportData) return <div className="text-center py-20">Analysis failed. Please start over.</div>;
 
     // Handle case where business was NOT found
     if (!reportData.business_found) {
+        const monthlyLostLeads = reportData.revenue_impact?.monthly_lost_leads || 0;
+        const avgJobValue = reportData.revenue_impact?.avg_job_value || 0;
+        const totalLost = monthlyLostLeads * avgJobValue;
+
         return (
             <div className="max-w-4xl mx-auto animate-fade-in">
                 <div className="text-center mb-12">
@@ -125,9 +198,9 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 
                 {/* Visibility Issues */}
                 <div className="bg-slate-800/50 border border-red-500/50 rounded-2xl p-8 mb-8">
-                    <h3 className="text-2xl font-bold text-red-400 mb-6">{reportData.visibility_analysis.title}</h3>
+                    <h3 className="text-2xl font-bold text-red-400 mb-6">{reportData.visibility_analysis?.title}</h3>
                     <div className="space-y-4">
-                        {reportData.visibility_analysis.issues.map((issue, idx) => (
+                        {Array.isArray(reportData.visibility_analysis?.issues) && reportData.visibility_analysis.issues.map((issue, idx) => (
                             <div key={idx} className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                                 <h4 className="font-bold text-red-300 text-lg">{issue.problem}</h4>
                                 <p className="text-slate-300">{issue.impact}</p>
@@ -144,11 +217,11 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 
                 {/* Competitor Reality Check */}
                 <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
-                    <h3 className="text-2xl font-bold text-blue-400 mb-4">{reportData.competitor_reality_check.title}</h3>
-                    <p className="text-slate-300 mb-6">{reportData.competitor_reality_check.summary}</p>
+                    <h3 className="text-2xl font-bold text-blue-400 mb-4">{reportData.competitor_reality_check?.title}</h3>
+                    <p className="text-slate-300 mb-6">{reportData.competitor_reality_check?.summary}</p>
                     
                     <div className="grid md:grid-cols-3 gap-4">
-                        {reportData.competitor_reality_check.top_competitors.map((comp, idx) => (
+                        {Array.isArray(reportData.competitor_reality_check?.top_competitors) && reportData.competitor_reality_check.top_competitors.map((comp, idx) => (
                             <div key={idx} className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                                 <h4 className="font-bold text-green-400">{comp.name}</h4>
                                 <p className="text-sm text-slate-300">⭐ {comp.rating} ({comp.reviews} reviews)</p>
@@ -160,25 +233,25 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 
                 {/* Revenue Impact */}
                 <div className="bg-gradient-to-br from-red-900/50 to-orange-900/50 border-2 border-orange-500 rounded-2xl p-8 mb-8">
-                    <h3 className="text-2xl font-bold text-orange-400 mb-4">{reportData.revenue_impact.title}</h3>
+                    <h3 className="text-2xl font-bold text-orange-400 mb-4">{reportData.revenue_impact?.title}</h3>
                     <div className="text-center">
                         <p className="text-4xl font-bold text-red-400 mb-2">
-                            ${(reportData.revenue_impact.monthly_lost_leads * reportData.revenue_impact.avg_job_value).toLocaleString()}/month
+                            ${totalLost.toLocaleString()}/month
                         </p>
                         <p className="text-slate-300">
-                            ≈ {reportData.revenue_impact.monthly_lost_leads} lost leads × ${reportData.revenue_impact.avg_job_value} average job
+                            ≈ {monthlyLostLeads} lost leads × ${avgJobValue} average job
                         </p>
                         <p className="text-orange-300 mt-4 font-semibold">
-                            That's ${((reportData.revenue_impact.monthly_lost_leads * reportData.revenue_impact.avg_job_value) * 12).toLocaleString()} per year you're losing to competitors!
+                            That's ${(totalLost * 12).toLocaleString()} per year you're losing to competitors!
                         </p>
                     </div>
                 </div>
 
                 {/* Action Plan */}
                 <div className="bg-slate-800/50 border border-green-500/50 rounded-2xl p-8 mb-8">
-                    <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.immediate_action_plan.title}</h3>
+                    <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.immediate_action_plan?.title}</h3>
                     <div className="space-y-4">
-                        {reportData.immediate_action_plan.priority_actions.map((action, idx) => (
+                        {Array.isArray(reportData.immediate_action_plan?.priority_actions) && reportData.immediate_action_plan.priority_actions.map((action, idx) => (
                             <div key={idx} className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                                 <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
                                     {idx + 1}
@@ -211,14 +284,17 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
     }
 
     // Handle case where business WAS found but has issues
+    const score = String(reportData.overall_score || '');
+    const advantageAreas = reportData.competitor_comparison?.competitor_averages?.advantage_areas;
+    
     return (
         <div className="max-w-4xl mx-auto animate-fade-in">
             <div className="text-center mb-12">
                 <h1 className="text-4xl md:text-5xl font-bold text-white">Your Business Visibility Report</h1>
                 <div className={`inline-block px-6 py-3 rounded-2xl border-2 mt-4 ${
-                    reportData.overall_score.startsWith('A') ? 'bg-green-500/20 border-green-500 text-green-400' :
-                    reportData.overall_score.startsWith('B') ? 'bg-blue-500/20 border-blue-500 text-blue-400' :
-                    reportData.overall_score.startsWith('C') ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400' :
+                    score.startsWith('A') ? 'bg-green-500/20 border-green-500 text-green-400' :
+                    score.startsWith('B') ? 'bg-blue-500/20 border-blue-500 text-blue-400' :
+                    score.startsWith('C') ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400' :
                     'bg-red-500/20 border-red-500 text-red-400'
                 }`}>
                     <span className="text-3xl font-bold">Grade: {reportData.overall_score}</span>
@@ -228,9 +304,9 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 
             {/* Profile Analysis */}
             <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
-                <h3 className="text-2xl font-bold text-blue-400 mb-6">{reportData.profile_analysis.title}</h3>
+                <h3 className="text-2xl font-bold text-blue-400 mb-6">{reportData.profile_analysis?.title}</h3>
                 <div className="space-y-4">
-                    {reportData.profile_analysis.issues.map((issue, idx) => (
+                    {Array.isArray(reportData.profile_analysis?.issues) && reportData.profile_analysis.issues.map((issue, idx) => (
                         <div key={idx} className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
                             <h4 className="font-bold text-orange-400">{issue.problem}</h4>
                             <p className="text-slate-300">{issue.impact}</p>
@@ -247,17 +323,17 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                         <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
                             <h4 className="font-bold text-blue-400 mb-3">Your Current Stats</h4>
                             <ul className="text-slate-300 space-y-1">
-                                <li>⭐ Rating: {reportData.competitor_comparison.your_stats.rating}/5</li>
-                                <li>📝 Reviews: {reportData.competitor_comparison.your_stats.reviews}</li>
-                                <li>📸 Photos: {reportData.competitor_comparison.your_stats.photos}</li>
+                                <li>⭐ Rating: {reportData.competitor_comparison.your_stats?.rating}/5</li>
+                                <li>📝 Reviews: {reportData.competitor_comparison.your_stats?.reviews}</li>
+                                <li>📸 Photos: {reportData.competitor_comparison.your_stats?.photos}</li>
                             </ul>
                         </div>
                         <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                             <h4 className="font-bold text-green-400 mb-3">Competitor Averages</h4>
                             <ul className="text-slate-300 space-y-1">
-                                <li>⭐ Rating: {reportData.competitor_comparison.competitor_averages.rating}/5</li>
-                                <li>📝 Reviews: {reportData.competitor_comparison.competitor_averages.reviews}</li>
-                                <li>🏆 They have: {reportData.competitor_comparison.competitor_averages.advantage_areas.join(', ')}</li>
+                                <li>⭐ Rating: {reportData.competitor_comparison.competitor_averages?.rating}/5</li>
+                                <li>📝 Reviews: {reportData.competitor_comparison.competitor_averages?.reviews}</li>
+                                <li>🏆 They have: {Array.isArray(advantageAreas) ? advantageAreas.join(', ') : ''}</li>
                             </ul>
                         </div>
                     </div>
@@ -266,9 +342,9 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 
             {/* Optimization Plan */}
             <div className="bg-slate-800/50 border border-green-500/50 rounded-2xl p-8 mb-8">
-                <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.optimization_plan.title}</h3>
+                <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.optimization_plan?.title}</h3>
                 <div className="space-y-4">
-                    {reportData.optimization_plan.priority_fixes.map((fix, idx) => (
+                    {Array.isArray(reportData.optimization_plan?.priority_fixes) && reportData.optimization_plan.priority_fixes.map((fix, idx) => (
                         <div key={idx} className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
                             <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
                                 {idx + 1}
@@ -300,223 +376,615 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
     );
 }
 
-// ===== IMPROVED API HANDLER WITH REAL VALIDATION =====
-export default async function handler(req, res) {
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-    
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
 
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
-        return res.status(405).end(`Method ${req.method} Not Allowed`);
-    }
+// --- FORM COMPONENT ---
+function LocalSeoForm({ onSubmit, error }) {
+    const [formData, setFormData] = useState({
+        businessName: '',
+        businessType: 'Plumber',
+        streetAddress: '',
+        location: '', // City, State
+        biggestChallenge: 'getting_more_leads',
+    });
 
-    const formData = req.body;
-    console.log('Form data received:', formData);
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
-    const geminiApiKey = process.env.GEMINI_API_KEY;
-    const placesApiKey = process.env.GOOGLE_PLACES_API_KEY;
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(formData);
+    };
 
-    if (!geminiApiKey || !placesApiKey) {
-        return res.status(500).json({
-            error: "Server configuration error. API keys are missing."
-        });
-    }
+    return (
+        <div className="max-w-3xl mx-auto animate-fade-in">
+            <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Are You Invisible to Local Customers?</h1>
+                <p className="text-xl md:text-2xl text-slate-300">Get a free, AI-powered report that reveals exactly why your competitors are outranking you on Google Maps and Search.</p>
+            </div>
+            
+            {error && (
+                <div className="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg mb-6 text-center">
+                    <p className="font-bold">Oops! Something went wrong.</p>
+                    <p>{error}</p>
+                </div>
+            )}
 
-    try {
-        // === STEP 1: REAL BUSINESS VALIDATION ===
+            <form onSubmit={handleSubmit} className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="businessName" className="block text-sm font-medium text-slate-300 mb-2">Business Name *</label>
+                        <input type="text" id="businessName" name="businessName" value={formData.businessName} onChange={handleChange} placeholder="e.g., Tony's Plumbing" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
+                    </div>
+                    <div>
+                        <label htmlFor="businessType" className="block text-sm font-medium text-slate-300 mb-2">Type of Business *</label>
+                        <select id="businessType" name="businessType" value={formData.businessType} onChange={handleChange} className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
+                             <option value="Plumber">Plumber</option>
+                             <option value="Electrician">Electrician</option>
+                             <option value="HVAC">HVAC</option>
+                             <option value="Roofer">Roofer</option>
+                             <option value="Landscaper">Landscaper</option>
+                             <option value="Dentist">Dentist</option>
+                             <option value="Restaurant">Restaurant</option>
+                             <option value="Barber Shop">Barber Shop</option>
+                             <option value="Hair Salon">Hair Salon</option>
+                             <option value="Auto Repair">Auto Repair</option>
+                             <option value="Law Firm">Law Firm</option>
+                             <option value="Gym">Gym</option>
+                             <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                 <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="streetAddress" className="block text-sm font-medium text-slate-300 mb-2">Street Address *</label>
+                        <input type="text" id="streetAddress" name="streetAddress" value={formData.streetAddress} onChange={handleChange} placeholder="e.g., 123 Main St" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
+                    </div>
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-slate-300 mb-2">City, State *</label>
+                        <input type="text" id="location" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., Philadelphia, PA" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
+                    </div>
+                </div>
+                <div>
+                    <label htmlFor="biggestChallenge" className="block text-sm font-medium text-slate-300 mb-2">What's your biggest marketing challenge right now? *</label>
+                    <select id="biggestChallenge" name="biggestChallenge" value={formData.biggestChallenge} onChange={handleChange} className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
+                        <option value="getting_more_leads">Getting more leads/phone calls</option>
+                        <option value="getting_reviews">Getting more positive reviews</option>
+                        <option value="beating_competitors">Beating my local competitors</option>
+                        <option value="not_enough_time">I don't have time for marketing</option>
+                        <option value="other">Something else</option>
+                    </select>
+                </div>
+                <button type="submit" className="w-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30">
+                    Generate My Free Report
+                </button>
+            </form>
+        </div>
+    );
+}
+
+
+// --- ONBOARDING PAGE COMPONENT ---
+function OnboardingPage({ businessName, onStartOver }) {
+    const [includeAddon, setIncludeAddon] = useState(false);
+    const [onboardingData, setOnboardingData] = useState({ name: '', email: '' });
+    const basePrice = 30;
+    const addonPrice = 10;
+
+    // NOTE: These are placeholder Stripe links. Replace with your actual links.
+    const baseCheckoutUrl = "https://buy.stripe.com/test_28o3dIe9OaUe5W0bII";
+    const addonCheckoutUrl = "https://buy.stripe.com/test_7sI6tUa1Cgco2FUfZ1";
+
+    const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setOnboardingData(prev => ({...prev, [name]: value}));
+    };
+
+    const handleCheckout = async (e) => {
+        e.preventDefault();
         
-        // First, geocode the location
-        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(formData.location)}&key=${placesApiKey}`;
-        const geocodeResponse = await fetch(geocodeUrl).then(res => res.json());
-        
-        if (geocodeResponse.status !== 'OK' || !geocodeResponse.results[0]) {
-            throw new Error(`We couldn't find that location. Please check the spelling and try again.`);
+        const submissionData = {
+             name: onboardingData.name,
+             email: onboardingData.email,
+             plan: includeAddon ? 'Standard + Review Management' : 'Standard',
+             price: `${basePrice + (includeAddon ? addonPrice : 0)}/mo`,
+             businessName: businessName,
+             submittedAt: new Date().toISOString(),
+         };
+
+        try {
+            // This sends the lead data to a form backend before redirecting to checkout.
+            await fetch('https://formspree.io/f/mnnvldep', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(submissionData),
+            });
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            // We can still proceed to checkout even if the form submission fails.
         }
         
-        const { lat, lng } = geocodeResponse.results[0].geometry.location;
+        // Redirect to Stripe checkout
+        window.location.href = checkoutUrl;
+    };
 
-        // === STEP 2: SEARCH FOR THE ACTUAL BUSINESS ===
-        const businessSearchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(formData.businessName + " " + formData.businessType + " " + formData.location)}&key=${placesApiKey}`;
-        
-        const businessSearch = await fetch(businessSearchUrl).then(res => res.json());
-        console.log('Business search results:', businessSearch);
+    return (
+        <div className="max-w-4xl mx-auto animate-fade-in">
+            <div className="text-center mb-10">
+                <h1 className="text-4xl md:text-5xl font-bold text-white">✅ Yes! I Want More Local Customers.</h1>
+                <p className="text-xl text-slate-300 mt-4">Here's your monthly "Done-For-You" local growth engine for <span className="text-blue-400 font-bold">{businessName}</span>:</p>
+            </div>
 
-        let businessFound = false;
-        let businessData = null;
-
-        // Check if we found a close match
-        if (businessSearch.status === 'OK' && businessSearch.results.length > 0) {
-            // Look for exact or close matches
-            const exactMatch = businessSearch.results.find(result => 
-                result.name.toLowerCase().includes(formData.businessName.toLowerCase()) ||
-                formData.businessName.toLowerCase().includes(result.name.toLowerCase())
-            );
+            <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 mb-10">
+                <h2 className="text-2xl font-bold text-center text-blue-400 mb-6">📦 Your Monthly Local Growth Engine</h2>
+                <div className="space-y-6">
+                    {onboardingDeliverables.map(item => (
+                        <div key={item.action} className="flex items-start gap-4">
+                            <div className="text-3xl mt-1">{item.icon}</div>
+                            <div>
+                                <h3 className="font-bold text-lg text-slate-100">{item.action}</h3>
+                                <p className="text-slate-400">{item.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
             
-            if (exactMatch) {
-                businessFound = true;
-                
-                // Get detailed info about the business
-                const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${exactMatch.place_id}&fields=name,rating,user_ratings_total,photos,formatted_address,website,formatted_phone_number,opening_hours,types&key=${placesApiKey}`;
-                const businessDetails = await fetch(detailsUrl).then(res => res.json());
-                
-                if (businessDetails.status === 'OK') {
-                    businessData = {
-                        name: businessDetails.result.name,
-                        rating: businessDetails.result.rating || 0,
-                        totalReviews: businessDetails.result.user_ratings_total || 0,
-                        photoCount: businessDetails.result.photos ? businessDetails.result.photos.length : 0,
-                        hasWebsite: !!businessDetails.result.website,
-                        hasPhone: !!businessDetails.result.formatted_phone_number,
-                        hasHours: !!businessDetails.result.opening_hours,
-                        address: businessDetails.result.formatted_address,
-                        categories: businessDetails.result.types || []
-                    };
-                }
-            }
+            <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
+                 <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Activate Your Plan</h2>
+                 <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
+                      <div>
+                           <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
+                           <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                      </div>
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                        <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="e.g., jane.doe@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                      </div>
+                      <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
+                           <div className="flex h-6 items-center">
+                               <input id="addon" name="addon" type="checkbox" checked={includeAddon} onChange={(e) => setIncludeAddon(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-green-500 focus:ring-green-500" />
+                           </div>
+                           <div className="ml-3 text-sm leading-6">
+                               <label htmlFor="addon" className="font-medium text-slate-200">Add "Done-For-You" Review Responses (+${addonPrice}/mo)</label>
+                               <p className="text-slate-400">We'll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
+                           </div>
+                      </div>
+
+                      <div className="text-center pt-4">
+                           <p className="font-bold text-white text-lg mb-2">🔐 Start Your 30-Day Risk-Free Trial — Just ${basePrice + (includeAddon ? addonPrice : 0)}/mo</p>
+                           <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
+                                   👉 Activate My Growth Plan
+                           </button>
+                      </div>
+                 </form>
+                 <div className="text-center mt-6">
+                      <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we'll send a quick onboarding form to link your GMB. Your first optimizations will begin within 48 hours.</p>
+                 </div>
+            </div>
+
+            <div className="text-center mt-16">
+                <button onClick={onStartOver} className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-semibold">
+                    &laquo; Analyze Another Business
+                </button>
+            </div>
+        </div>
+    );
+}
+
+
+// --- HERO AND AUDIT FORM SECTION ---
+function HeroAndAuditSection() {
+    const [view, setView] = useState('form'); // 'form', 'loading', 'audit', 'report'
+    const [reportData, setReportData] = useState(null);
+    const [formData, setFormData] = useState(null);
+    const [error, setError] = useState(null);
+
+    const generateReport = async (data) => {
+        setView('loading');
+        setError(null);
+        setFormData(data);
+        
+        // Submit lead data to Formspree first for tracking.
+        try {
+            await fetch('https://formspree.io/f/mnnvldep', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    formName: "Free SEO Audit Lead",
+                    ...data
+                }),
+            });
+        } catch (formspreeError) {
+            console.error("Could not submit lead to Formspree:", formspreeError);
+            // Non-critical error, so we continue.
         }
 
-        // === STEP 3: GET COMPETITOR DATA ===
-        const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=8000&keyword=${encodeURIComponent(formData.businessType)}&key=${placesApiKey}`;
-        const nearbyResponse = await fetch(nearbyUrl).then(res => res.json());
-        
-        let competitors = [];
-        if (nearbyResponse.status === 'OK') {
-            competitors = nearbyResponse.results
-                .filter(place => 
-                    place.business_status === 'OPERATIONAL' &&
-                    place.user_ratings_total > 5 &&
-                    place.name.toLowerCase() !== formData.businessName.toLowerCase()
-                )
-                .sort((a, b) => b.user_ratings_total - a.user_ratings_total)
-                .slice(0, 3);
-        }
+        // --- Gemini API Call ---
+        const prompt = `
+            You are an expert Local SEO Analyst. Your task is to generate a detailed, realistic, and compelling local SEO audit report for a small business.
+            The report should be structured as a JSON object. Based on the business details, decide if the business is likely to be found on Google Maps.
+            
+            **Business Details:**
+            - Business Name: "${data.businessName}"
+            - Business Type: ${data.businessType}
+            - Address: ${data.streetAddress}, ${data.location}
+            - Biggest Challenge: ${data.biggestChallenge}
 
-        // === STEP 4: GENERATE REAL ASSESSMENT ===
-        let reportData;
+            **Instructions:**
+            1.  **Analyze Visibility:** Based on the business name and address, determine if it's a "discoverable" business (likely has a Google Business Profile) or an "undiscoverable" one (e.g., a generic name, a suite in a large building, a service area business without a clear address). This is the most important decision.
+            2.  **Generate "Not Found" Report:** If you decide the business is undiscoverable or has critical issues, set "business_found" to \`false\`. Create a report that highlights major problems like NAP inconsistency, lack of a profile, and the direct revenue impact. The tone should be urgent and problem-focused.
+            3.  **Generate "Found" Report:** If you decide the business is discoverable, set "business_found" to \`true\`. Create a report that focuses on optimization opportunities. Compare them to typical local competitors and provide a graded score (A, B, C, etc.). The tone should be encouraging but highlight clear areas for improvement.
+            4.  **Fill the JSON:** Populate ALL fields in the appropriate JSON structure based on your decision. Make the content specific, actionable, and tailored to the business type. For example, a plumber's competitors are different from a salon's.
+            5.  **Output JSON:** Respond ONLY with the raw JSON object that conforms to the provided schema. Do not include any other text, markdown, or explanations.
+        `;
 
-        if (!businessFound) {
-            // === BUSINESS NOT FOUND - SHOW THE PROBLEM ===
-            reportData = {
-                business_found: false,
-                overall_score: "F",
-                overall_explanation: "🚨 CRITICAL: Your business is essentially invisible online. Customers can't find you when they search.",
-                
-                visibility_analysis: {
-                    title: "Google Business Profile Status",
-                    status: "NOT FOUND",
-                    issues: [
-                        { problem: "🔍 No Google Business Profile Found", impact: "Customers searching for your services can't find you", urgency: "CRITICAL" },
-                        { problem: "📍 Missing from Google Maps", impact: "You're losing customers to competitors who show up in map searches", urgency: "CRITICAL" },
-                        { problem: "⭐ Zero Online Reviews", impact: "No social proof means customers don't trust you", urgency: "HIGH" }
-                    ]
-                },
-                
-                competitor_reality_check: {
-                    title: "What Your Competitors Are Doing Right",
-                    summary: `We found ${competitors.length} competing ${formData.businessType.toLowerCase()}s in ${formData.location} who ARE visible online.`,
-                    top_competitors: competitors.slice(0, 3).map(comp => ({
-                        name: comp.name,
-                        rating: comp.rating,
-                        reviews: comp.user_ratings_total,
-                        advantage: "Has active Google Business Profile - YOU DON'T"
-                    }))
-                },
-                
-                immediate_action_plan: {
-                    title: "What You Need to Do NOW",
-                    priority_actions: [
-                        { action: "Create Google Business Profile", timeframe: "This Week", impact: "Start appearing in local searches" },
-                        { action: "Add Photos & Business Info", timeframe: "Week 2", impact: "Build trust with potential customers" },
-                        { action: "Get Your First 10 Reviews", timeframe: "Month 1", impact: "Compete with established businesses" },
-                        { action: "Optimize for Local Keywords", timeframe: "Month 1", impact: "Rank higher than competitors" }
-                    ]
-                },
-                
-                revenue_impact: {
-                    title: "What This Invisibility is Costing You",
-                    monthly_lost_leads: Math.floor(Math.random() * 15) + 10, // 10-25 leads
-                    avg_job_value: formData.businessType === 'Plumber' ? 350 : 250,
-                    monthly_lost_revenue: null // Will calculate in frontend
-                }
-            };
-            
-        } else {
-            // === BUSINESS FOUND - ANALYZE WHAT'S MISSING ===
-            const issues = [];
-            let score = 85; // Start high, deduct for issues
-            
-            if (businessData.totalReviews < 20) {
-                issues.push({ problem: "📝 Low Review Count", impact: `Only ${businessData.totalReviews} reviews vs competitors with 50+`, urgency: "HIGH" });
-                score -= 15;
-            }
-            
-            if (businessData.photoCount < 10) {
-                issues.push({ problem: "📸 Insufficient Photos", impact: `Only ${businessData.photoCount} photos - customers need to see your work`, urgency: "MEDIUM" });
-                score -= 10;
-            }
-            
-            if (!businessData.hasWebsite) {
-                issues.push({ problem: "🌐 No Website Listed", impact: "Missing conversion opportunities", urgency: "MEDIUM" });
-                score -= 10;
-            }
-            
-            if (businessData.rating < 4.5) {
-                issues.push({ problem: "⭐ Rating Below 4.5", impact: "Lower ratings hurt visibility and trust", urgency: "HIGH" });
-                score -= 20;
-            }
-
-            const grade = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F';
-            
-            reportData = {
-                business_found: true,
-                business_data: businessData,
-                overall_score: grade,
-                overall_explanation: `Found your business but identified ${issues.length} critical issues hurting your visibility.`,
-                
-                profile_analysis: {
-                    title: "Your Google Business Profile Analysis",
-                    current_status: "FOUND BUT NEEDS OPTIMIZATION",
-                    issues: issues
-                },
-                
-                competitor_comparison: {
-                    title: "How You Stack Up Against Competitors",
-                    your_stats: {
-                        reviews: businessData.totalReviews,
-                        rating: businessData.rating,
-                        photos: businessData.photoCount
-                    },
-                    competitor_averages: {
-                        reviews: Math.floor(competitors.reduce((sum, c) => sum + c.user_ratings_total, 0) / competitors.length),
-                        rating: (competitors.reduce((sum, c) => sum + c.rating, 0) / competitors.length).toFixed(1),
-                        advantage_areas: competitors.length > 0 ? ["More established online presence", "Higher review counts"] : []
+        const reportSchema = {
+            type: "OBJECT",
+            properties: {
+                "business_found": { "type": "BOOLEAN" },
+                "overall_score": { "type": "STRING" },
+                "overall_explanation": { "type": "STRING" },
+                // Fields for "business_found": false
+                "visibility_analysis": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "issues": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "problem": { "type": "STRING" },
+                                    "impact": { "type": "STRING" },
+                                    "urgency": { "type": "STRING", "enum": ["CRITICAL", "HIGH", "MEDIUM"] }
+                                }
+                            }
+                        }
                     }
                 },
-                
-                optimization_plan: {
-                    title: "Your Optimization Roadmap",
-                    priority_fixes: issues.map(issue => ({
-                        fix: issue.problem.replace(/[📝📸🌐⭐]/g, '').trim(),
-                        why: issue.impact,
-                        timeline: issue.urgency === 'CRITICAL' ? '1 week' : issue.urgency === 'HIGH' ? '2 weeks' : '1 month'
-                    }))
+                "competitor_reality_check": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "summary": { "type": "STRING" },
+                        "top_competitors": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "name": { "type": "STRING" },
+                                    "rating": { "type": "NUMBER" },
+                                    "reviews": { "type": "NUMBER" },
+                                    "advantage": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "revenue_impact": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "monthly_lost_leads": { "type": "NUMBER" },
+                        "avg_job_value": { "type": "NUMBER" }
+                    }
+                },
+                "immediate_action_plan": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "priority_actions": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "action": { "type": "STRING" },
+                                    "impact": { "type": "STRING" },
+                                    "timeframe": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                },
+                // Fields for "business_found": true
+                "profile_analysis": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "issues": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "problem": { "type": "STRING" },
+                                    "impact": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
+                },
+                "competitor_comparison": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "your_stats": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "rating": { "type": "NUMBER" },
+                                "reviews": { "type": "NUMBER" },
+                                "photos": { "type": "NUMBER" }
+                            }
+                        },
+                        "competitor_averages": {
+                            "type": "OBJECT",
+                            "properties": {
+                                "rating": { "type": "NUMBER" },
+                                "reviews": { "type": "NUMBER" },
+                                "advantage_areas": { "type": "ARRAY", "items": { "type": "STRING" } }
+                            }
+                        }
+                    }
+                },
+                "optimization_plan": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "title": { "type": "STRING" },
+                        "priority_fixes": {
+                            "type": "ARRAY",
+                            "items": {
+                                "type": "OBJECT",
+                                "properties": {
+                                    "fix": { "type": "STRING" },
+                                    "why": { "type": "STRING" },
+                                    "timeline": { "type": "STRING" }
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+        };
+
+        try {
+            const apiKey = ""; // This will be handled by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: reportSchema,
+                },
             };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorResult = await response.json();
+                console.error("API Error Response:", errorResult);
+                throw new Error(errorResult.error?.message || 'The AI model failed to generate a valid report.');
+            }
+
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
+                const jsonText = result.candidates[0].content.parts[0].text;
+                const parsedJson = JSON.parse(jsonText);
+                setReportData(parsedJson);
+                setView('audit');
+            } else {
+                throw new Error("Received an empty or invalid response from the AI model.");
+            }
+
+        } catch (err) {
+            console.error("Failed to generate report with Gemini:", err);
+            setError(err.message || "An unknown error occurred while generating the AI report. Please try again.");
+            setView('form');
         }
+    };
 
-        // === STEP 5: RETURN REAL DATA ===
-        res.status(200).json(reportData);
+    const handleGetFullPlan = () => setView('report');
+    const handleStartOver = () => {
+        setView('form');
+        setReportData(null);
+        setFormData(null);
+        setError(null);
+    };
 
-    } catch (error) {
-        console.error('API Error:', error.message);
-        res.status(500).json({
-            error: error.message || 'Unable to analyze your business. Please try again.'
-        });
-    }
+    const renderView = () => {
+        switch (view) {
+            case 'loading':
+                return <LoadingState />;
+            case 'audit':
+                return <DetailedAuditReport reportData={reportData} onGetFullPlan={handleGetFullPlan} />;
+            case 'report':
+                return <OnboardingPage 
+                    businessName={formData.businessName} 
+                    onStartOver={handleStartOver} 
+                />;
+            case 'form':
+            default:
+                return <LocalSeoForm onSubmit={generateReport} error={error} />;
+        }
+    };
+
+    return (
+        <section id="gmb-check" className="py-16 md:py-24">
+             <div className="container mx-auto px-4">
+                 {renderView()}
+            </div>
+        </section>
+    );
 }
+
+
+// --- STATIC CONTENT SECTIONS ---
+
+function FeaturesSection() {
+    return (
+        <section id="features" className="py-16 md:py-24 bg-slate-900/70">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Why Choose SEO Sentinel?</h2>
+                <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    {features.map((feature, index) => (
+                        <div key={index} className="bg-slate-800/50 p-8 rounded-xl border border-slate-700 text-center">
+                            {feature.icon}
+                            <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                            <p className="text-slate-400">{feature.description}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function PricingSection() {
+    const scrollToAudit = () => {
+        document.getElementById('gmb-check')?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    return (
+        <section id="pricing" className="py-16 md:py-24 bg-slate-900">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Simple, Affordable Pricing</h2>
+                <div className="max-w-md mx-auto bg-slate-800/50 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-500/10">
+                    <div className="text-center">
+                        <h3 className="text-2xl font-bold text-white">Standard Plan</h3>
+                        <p className="text-5xl font-bold text-blue-400 my-4">$30<span className="text-xl text-slate-400">/mo</span></p>
+                        <p className="text-slate-400">Cancel anytime. No hidden fees.</p>
+                    </div>
+                    <ul className="space-y-3 my-8 text-slate-300">
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Automated GMB optimization</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Local keyword monitoring</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Review management alerts</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Monthly progress reports</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Priority customer support</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> No contracts or setup fees</li>
+                    </ul>
+                    <button onClick={scrollToAudit} className="w-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold py-3 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-500/20">
+                        Start with a Free Audit
+                    </button>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function BlogSection() {
+    return (
+        <section id="blog" className="py-16 md:py-24 bg-slate-900/70">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Latest Local SEO Tips for Salon Suite Owners</h2>
+                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    {blogPosts.map((post, index) => (
+                        <div key={index} className="bg-slate-800 rounded-xl p-6 border border-slate-700 group transition-all duration-300 hover:border-blue-500 hover:-translate-y-1">
+                            <h3 className="text-lg font-bold text-white mb-2">{post.title}</h3>
+                            <p className="text-slate-400 mb-4 text-sm">{post.description}</p>
+                            <a href={post.link} className="font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">Read More &rarr;</a>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function FAQSection() {
+    return (
+        <section id="faq" className="py-16 md:py-24 bg-slate-900">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Frequently Asked Questions</h2>
+                <div className="max-w-3xl mx-auto space-y-4">
+                    {faqs.map((faq, index) => (
+                        <details key={index} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 cursor-pointer group">
+                            <summary className="font-semibold text-lg text-white flex justify-between items-center list-none">
+                                {faq.q}
+                                <span className="text-blue-400 transform transition-transform duration-300 group-open:rotate-45">+</span>
+                            </summary>
+                            <p className="text-slate-400 mt-4">
+                                {faq.a}
+                            </p>
+                        </details>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function Footer() {
+    const scrollToSection = (id) => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    return (
+        <footer className="bg-slate-900 border-t border-slate-800">
+            <div className="container mx-auto px-4 py-12">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-slate-400 mb-8">
+                    <div>
+                        <h3 className="font-bold text-white mb-3">Product</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li><button onClick={() => scrollToSection('features')} className="hover:text-white">Features</button></li>
+                            <li><button onClick={() => scrollToSection('pricing')} className="hover:text-white">Pricing</button></li>
+                            <li><button onClick={() => scrollToSection('gmb-check')} className="hover:text-white">Free Audit</button></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white mb-3">Resources</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li><button onClick={() => scrollToSection('blog')} className="hover:text-white">Blog</button></li>
+                            <li><button onClick={() => scrollToSection('faq')} className="hover:text-white">FAQ</button></li>
+                            <li><a href="#" className="hover:text-white">Support</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white mb-3">Company</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li><a href="#" className="hover:text-white">About Us</a></li>
+                            <li><a href="#" className="hover:text-white">Contact</a></li>
+                            <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white mb-3">Connect</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li><a href="#" className="hover:text-white">Community</a></li>
+                            <li><a href="mailto:support@seosentinelai.com" className="hover:text-white">Email Us</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div className="text-center text-slate-500 text-sm pt-8 border-t border-slate-800">
+                    <p>&copy; {new Date().getFullYear()} SEO Sentinel. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    );
+}
+
+// --- MAIN APP COMPONENT ---
+function App() {
+    return (
+        <div className="bg-slate-900 min-h-screen text-white font-sans">
+            <Header />
+            <main>
+                <HeroAndAuditSection />
+                <FeaturesSection />
+                <PricingSection />
+                <BlogSection />
+                <FAQSection />
+            </main>
+            <Footer />
+        </div>
+    );
+}
+
+export default App;
