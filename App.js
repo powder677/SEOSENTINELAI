@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+// Explicitly destructuring hooks from the React object to address potential build issues.
+const { useState, useEffect } = React;
 
 // --- HELPER ICONS ---
 // A collection of SVG icons used throughout the application for a consistent look and feel.
@@ -986,4 +988,3 @@ function App() {
 }
 
 export default App;
-
