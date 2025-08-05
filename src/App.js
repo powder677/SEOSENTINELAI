@@ -182,8 +182,9 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 
     // Handle case where business was NOT found
     if (!reportData.business_found) {
-        const monthlyLostLeads = reportData.revenue_impact?.monthly_lost_leads || 0;
-        const avgJobValue = reportData.revenue_impact?.avg_job_value || 0;
+        // If the AI returns 0, use more impactful default values.
+        const monthlyLostLeads = reportData.revenue_impact?.monthly_lost_leads || 15;
+        const avgJobValue = reportData.revenue_impact?.avg_job_value || 250;
         const totalLost = monthlyLostLeads * avgJobValue;
 
         return (
