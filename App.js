@@ -569,7 +569,7 @@ function HeroAndAuditSection() {
     const [formData, setFormData] = useState(null);
     const [error, setError] = useState(null);
 
-    const generateReport = async (data) => {
+    const generate-Report = async (data) => {
         setView('loading');
         setError(null);
         setFormData(data);
