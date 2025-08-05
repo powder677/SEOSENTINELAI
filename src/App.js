@@ -471,9 +471,9 @@ function OnboardingPage({ businessName, onStartOver }) {
     const basePrice = 30;
     const addonPrice = 10;
 
-    // NOTE: These are placeholder Stripe links. Replace with your actual links.
-    const baseCheckoutUrl = "https://buy.stripe.com/test_28o3dIe9OaUe5W0bII";
-    const addonCheckoutUrl = "https://buy.stripe.com/test_7sI6tUa1Cgco2FUfZ1";
+    // Production Stripe checkout links
+    const baseCheckoutUrl = "https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i";
+    const addonCheckoutUrl = "https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h";
 
     const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
 
