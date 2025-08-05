@@ -588,7 +588,7 @@ function HeroAndAuditSection() {
         setError(null);
         setFormData(data);
         
-        // Submit lead data to Formspree first for tracking.
+        // First, submit the lead data to a service like Formspree for tracking.
         try {
             await fetch('https://formspree.io/f/mnnvldep', {
                 method: 'POST',
@@ -600,193 +600,33 @@ function HeroAndAuditSection() {
             });
         } catch (formspreeError) {
             console.error("Could not submit lead to Formspree:", formspreeError);
-            // Non-critical error, so we continue.
+            // This is a non-critical error, so we can continue even if it fails.
         }
 
-        // --- Gemini API Call ---
-        const prompt = `
-            You are an expert Local SEO Analyst. Your task is to generate a detailed, realistic, and compelling local SEO audit report for a small business.
-            The report should be structured as a JSON object. Based on the business details, decide if the business is likely to be found on Google Maps.
-            
-            **Business Details:**
-            - Business Name: "${data.businessName}"
-            - Business Type: ${data.businessType}
-            - Address: ${data.streetAddress}, ${data.location}
-            - Biggest Challenge: ${data.biggestChallenge}
-
-            **Instructions:**
-            1.  **Analyze Visibility:** Based on the business name and address, determine if it's a "discoverable" business (likely has a Google Business Profile) or an "undiscoverable" one (e.g., a generic name, a suite in a large building, a service area business without a clear address). This is the most important decision.
-            2.  **Generate "Not Found" Report:** If you decide the business is undiscoverable or has critical issues, set "business_found" to \`false\`. Create a report that highlights major problems like NAP inconsistency, lack of a profile, and the direct revenue impact. The tone should be urgent and problem-focused.
-            3.  **Generate "Found" Report:** If you decide the business is discoverable, set "business_found" to \`true\`. Create a report that focuses on optimization opportunities. Compare them to typical local competitors and provide a graded score (A, B, C, etc.). The tone should be encouraging but highlight clear areas for improvement.
-            4.  **Fill the JSON:** Populate ALL fields in the appropriate JSON structure based on your decision. Make the content specific, actionable, and tailored to the business type. For example, a plumber's competitors are different from a salon's.
-            5.  **Output JSON:** Respond ONLY with the raw JSON object that conforms to the provided schema. Do not include any other text, markdown, or explanations.
-        `;
-
-        const reportSchema = {
-            type: "OBJECT",
-            properties: {
-                "business_found": { "type": "BOOLEAN" },
-                "overall_score": { "type": "STRING" },
-                "overall_explanation": { "type": "STRING" },
-                // Fields for "business_found": false
-                "visibility_analysis": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": { "type": "STRING" },
-                        "issues": {
-                            "type": "ARRAY",
-                            "items": {
-                                "type": "OBJECT",
-                                "properties": {
-                                    "problem": { "type": "STRING" },
-                                    "impact": { "type": "STRING" },
-                                    "urgency": { "type": "STRING", "enum": ["CRITICAL", "HIGH", "MEDIUM"] }
-                                }
-                            }
-                        }
-                    }
-                },
-                "competitor_reality_check": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": { "type": "STRING" },
-                        "summary": { "type": "STRING" },
-                        "top_competitors": {
-                            "type": "ARRAY",
-                            "items": {
-                                "type": "OBJECT",
-                                "properties": {
-                                    "name": { "type": "STRING" },
-                                    "rating": { "type": "NUMBER" },
-                                    "reviews": { "type": "NUMBER" },
-                                    "advantage": { "type": "STRING" }
-                                }
-                            }
-                        }
-                    }
-                },
-                "revenue_impact": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": { "type": "STRING" },
-                        "monthly_lost_leads": { "type": "NUMBER" },
-                        "avg_job_value": { "type": "NUMBER" }
-                    }
-                },
-                "immediate_action_plan": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": { "type": "STRING" },
-                        "priority_actions": {
-                            "type": "ARRAY",
-                            "items": {
-                                "type": "OBJECT",
-                                "properties": {
-                                    "action": { "type": "STRING" },
-                                    "impact": { "type": "STRING" },
-                                    "timeframe": { "type": "STRING" }
-                                }
-                            }
-                        }
-                    }
-                },
-                // Fields for "business_found": true
-                "profile_analysis": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": { "type": "STRING" },
-                        "issues": {
-                            "type": "ARRAY",
-                            "items": {
-                                "type": "OBJECT",
-                                "properties": {
-                                    "problem": { "type": "STRING" },
-                                    "impact": { "type": "STRING" }
-                                }
-                            }
-                        }
-                    }
-                },
-                "competitor_comparison": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": { "type": "STRING" },
-                        "your_stats": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "rating": { "type": "NUMBER" },
-                                "reviews": { "type": "NUMBER" },
-                                "photos": { "type": "NUMBER" }
-                            }
-                        },
-                        "competitor_averages": {
-                            "type": "OBJECT",
-                            "properties": {
-                                "rating": { "type": "NUMBER" },
-                                "reviews": { "type": "NUMBER" },
-                                "advantage_areas": { "type": "ARRAY", "items": { "type": "STRING" } }
-                            }
-                        }
-                    }
-                },
-                "optimization_plan": {
-                    "type": "OBJECT",
-                    "properties": {
-                        "title": { "type": "STRING" },
-                        "priority_fixes": {
-                            "type": "ARRAY",
-                            "items": {
-                                "type": "OBJECT",
-                                "properties": {
-                                    "fix": { "type": "STRING" },
-                                    "why": { "type": "STRING" },
-                                    "timeline": { "type": "STRING" }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        };
-
+        // Now, call the Vercel serverless function to generate the report.
         try {
-            const apiKey = ""; // This will be handled by the environment
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: [{ role: "user", parts: [{ text: prompt }] }],
-                generationConfig: {
-                    responseMimeType: "application/json",
-                    responseSchema: reportSchema,
-                },
-            };
-
-            const response = await fetch(apiUrl, {
+            const response = await fetch('/api/generate-report', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             });
 
             if (!response.ok) {
-                const errorResult = await response.json();
-                console.error("API Error Response:", errorResult);
-                throw new Error(errorResult.error?.message || 'The AI model failed to generate a valid report.');
+                // Try to get a meaningful error message from the Vercel function's response.
+                const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response from server.' }));
+                throw new Error(errorResult.error || `The server responded with a status of ${response.status}.`);
             }
 
             const result = await response.json();
             
-            if (result.candidates && result.candidates.length > 0 && result.candidates[0].content.parts.length > 0) {
-                const jsonText = result.candidates[0].content.parts[0].text;
-                const parsedJson = JSON.parse(jsonText);
-                setReportData(parsedJson);
-                setView('audit');
-            } else {
-                throw new Error("Received an empty or invalid response from the AI model.");
-            }
+            setReportData(result);
+            setView('audit');
 
         } catch (err) {
-            console.error("Failed to generate report with Gemini:", err);
-            setError(err.message || "An unknown error occurred while generating the AI report. Please try again.");
+            console.error("Failed to generate report:", err);
+            setError(err.message || "An unknown error occurred while generating the report. Please try again.");
             setView('form');
         }
     };
@@ -807,7 +647,7 @@ function HeroAndAuditSection() {
                 return <DetailedAuditReport reportData={reportData} onGetFullPlan={handleGetFullPlan} />;
             case 'report':
                 return <OnboardingPage 
-                    businessName={formData.businessName} 
+                    businessName={formData?.businessName} 
                     onStartOver={handleStartOver} 
                 />;
             case 'form':
