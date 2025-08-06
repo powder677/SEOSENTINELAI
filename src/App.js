@@ -747,8 +747,8 @@ function OnboardingPage({ initialData, onStartOver }) {
 
             if (response.ok) {
                  const stripeLink = formData.manageMessages 
-                    ? 'https://buy.stripe.com/7sY6oG5S5b2g8K36ix' 
-                    : 'https://buy.stripe.com/28EcN43JX5HW1hBgXb';
+                    ? 'https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h' 
+                    : 'https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i';
                 window.location.href = stripeLink;
             } else {
                 throw new Error("Form submission failed");
@@ -769,6 +769,27 @@ function OnboardingPage({ initialData, onStartOver }) {
         return [];
     };
     
+    if (isSubmitted) {
+        return (
+            <div className="max-w-3xl mx-auto text-left py-12 animate-fade-in bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
+                <h2 className="text-2xl font-bold text-white mb-4">☑️ You have confirmed that the above information is accurate.</h2>
+                <h2 className="text-2xl font-bold text-white mb-6">☑️ You have authorized SEO Sentinel to request management access to your Google Business Profile.</h2>
+                
+                <h3 className="text-xl font-semibold text-blue-400 mb-3">📬 What’s Next?</h3>
+                <ul className="list-disc list-inside text-slate-300 space-y-2">
+                    <li>Keep an eye on your inbox – Google will send you a request to approve our access.</li>
+                    <li>We’ll begin setup within 24 hours and send your weekly post preview, review prompt, and optimization plan.</li>
+                    <li>You’ll also receive a QR code to make it easy to collect customer reviews.</li>
+                </ul>
+                <p className="text-slate-400 mt-6">If you need to update your info or have any questions, reply to this email or contact us at <a href="mailto:JasonPulzar@SeosentinelAI.com" className="text-blue-400 hover:underline">JasonPulzar@SeosentinelAI.com</a></p>
+                
+                <button onClick={onStartOver} className="mt-8 text-blue-400 hover:text-blue-300 transition-colors duration-300 font-semibold">
+                    &laquo; Back to Home
+                </button>
+            </div>
+        )
+    }
+
     return (
         <div className="max-w-3xl mx-auto">
             <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
@@ -1084,7 +1105,7 @@ function PricingSection() {
                         <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> No contracts or setup fees</li>
                     </ul>
                      <div className="text-center">
-                        <a href="https://buy.stripe.com/28EcN43JX5HW1hBgXb" className="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">Get Started</a>
+                        <a href="https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i" className="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">Get Started</a>
                     </div>
                 </div>
             </div>
