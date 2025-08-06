@@ -180,6 +180,78 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                         <p className="text-xl text-red-300">{reportData.overall_explanation}</p>
                     </div>
                 </div>
+
+                {/* Visibility Issues */}
+                <div className="bg-slate-800/50 border border-red-500/50 rounded-2xl p-8 mb-8">
+                    <h3 className="text-2xl font-bold text-red-400 mb-6">{reportData.visibility_analysis?.title || 'Visibility Analysis'}</h3>
+                    <div className="space-y-4">
+                        {Array.isArray(reportData.visibility_analysis?.issues) && reportData.visibility_analysis.issues.length > 0 ? (
+                            reportData.visibility_analysis.issues.map((issue, idx) => (
+                                <div key={idx} className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                                    <h4 className="font-bold text-red-300 text-lg">{issue.problem}</h4>
+                                    <p className="text-slate-300">{issue.impact}</p>
+                                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mt-2 ${
+                                        issue.urgency === 'CRITICAL' ? 'bg-red-600 text-white' :
+                                        issue.urgency === 'HIGH' ? 'bg-orange-600 text-white' : 'bg-yellow-600 text-black'
+                                    }`}>
+                                        {issue.urgency} PRIORITY
+                                    </span>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-slate-400">No critical visibility issues were identified.</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Competitor Reality Check */}
+                <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
+                    <h3 className="text-2xl font-bold text-blue-400 mb-4">{reportData.competitor_reality_check?.title || 'Competitor Reality Check'}</h3>
+                    <p className="text-slate-300 mb-6">{reportData.competitor_reality_check?.summary}</p>
+                    
+                    <div className="grid md:grid-cols-3 gap-4">
+                        {Array.isArray(reportData.competitor_reality_check?.top_competitors) && reportData.competitor_reality_check.top_competitors.length > 0 ? (
+                            reportData.competitor_reality_check.top_competitors.map((comp, idx) => (
+                                <div key={idx} className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                                    <h4 className="font-bold text-green-400">{comp.name}</h4>
+                                    <p className="text-sm text-slate-300">⭐ {comp.rating} ({comp.reviews} reviews)</p>
+                                    <p className="text-xs text-green-300 mt-2">{comp.advantage}</p>
+                                </div>
+                            ))
+                        ) : (
+                             <p className="text-slate-400 col-span-3">Could not retrieve specific competitor data, but they are likely getting the customers you're missing.</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Action Plan */}
+                <div className="bg-slate-800/50 border border-green-500/50 rounded-2xl p-8 mb-8">
+                    <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.immediate_action_plan?.title || 'Immediate Action Plan'}</h3>
+                    <div className="space-y-4">
+                        {Array.isArray(reportData.immediate_action_plan?.priority_actions) && reportData.immediate_action_plan.priority_actions.length > 0 ? (
+                            reportData.immediate_action_plan.priority_actions.map((action, idx) => (
+                                <div key={idx} className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                                    <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                                        {idx + 1}
+                                    </div>
+                                    <div className="flex-grow">
+                                        <h4 className="font-bold text-green-400">{action.action}</h4>
+                                        <p className="text-slate-300 text-sm">{action.impact}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                            {action.timeframe}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-slate-400">No specific actions were identified, but the first step is always creating a Google Business Profile.</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* CTA */}
                 <div className="bg-gradient-to-br from-green-800 to-green-900 border-2 border-green-500 rounded-2xl p-8 text-center">
                     <h3 className="text-3xl font-bold text-white mb-4">Ready to Stop Losing Customers?</h3>
                     <p className="text-green-300 mb-6">We'll set up your Google Business Profile and get you visible in 48 hours.</p>
@@ -192,6 +264,7 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
         );
     }
 
+    // Handle case where business WAS found but has issues
     const score = String(reportData.overall_score || '');
     const advantageAreas = reportData.competitor_comparison?.competitor_averages?.advantage_areas;
     
@@ -210,6 +283,7 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                 <p className="text-xl text-slate-300 mt-4">{reportData.overall_explanation}</p>
             </div>
 
+            {/* Profile Analysis */}
             <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
                 <h3 className="text-2xl font-bold text-blue-400 mb-6">{reportData.profile_analysis?.title || 'Profile Analysis'}</h3>
                 <div className="space-y-4">
@@ -226,6 +300,7 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                 </div>
             </div>
 
+            {/* Competitor Comparison - only show if we have competitor data */}
             {reportData.competitor_comparison && (
                 <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
                     <h3 className="text-2xl font-bold text-blue-400 mb-6">{reportData.competitor_comparison.title}</h3>
@@ -250,6 +325,7 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                 </div>
             )}
 
+            {/* Optimization Plan */}
             <div className="bg-slate-800/50 border border-green-500/50 rounded-2xl p-8 mb-8">
                 <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.optimization_plan?.title || 'Optimization Plan'}</h3>
                 <div className="space-y-4">
@@ -276,6 +352,7 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                 </div>
             </div>
 
+            {/* CTA */}
             <div className="bg-gradient-to-br from-green-800 to-green-900 border-2 border-green-500 rounded-2xl p-8 text-center">
                 <h3 className="text-3xl font-bold text-white mb-4">Ready to Fix These Issues?</h3>
                 <p className="text-green-300 mb-6">We'll optimize everything for you, so you can focus on your business.</p>
