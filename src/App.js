@@ -616,6 +616,7 @@ const BusinessHours = ({ hours, setHours }) => {
 
 function OnboardingPage({ initialData, onStartOver }) {
     const [page, setPage] = useState(1);
+    const [isSubmitted, setIsSubmitted] = useState(false);
     const [formData, setFormData] = useState({
         // Step 1
         businessName: initialData?.businessName || '',
@@ -651,7 +652,7 @@ function OnboardingPage({ initialData, onStartOver }) {
         // Step 5
         primaryGoal: '',
         marketingBudget: '',
-        targetAge: '',
+        targetAge: [],
         competitors: '',
         differentiators: '',
         biggestChallenge: initialData?.biggestChallenge || '',
@@ -665,16 +666,17 @@ function OnboardingPage({ initialData, onStartOver }) {
         bookingLink: '',
         promotions: '',
         // Step 7
+        manageMessages: false,
         confirmInfo: false,
         authorize: false,
     });
-    const [isSubmitted, setIsSubmitted] = useState(false);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         
         if (type === 'checkbox') {
-            if (name === 'socialMedia' || name === 'currentAdvertising' || name === 'services') {
+            const arrayFields = ['socialMedia', 'currentAdvertising', 'services', 'targetAge'];
+            if (arrayFields.includes(name)) {
                  setFormData(prev => ({
                     ...prev,
                     [name]: checked ? [...prev[name], value] : prev[name].filter(item => item !== value)
@@ -733,7 +735,7 @@ function OnboardingPage({ initialData, onStartOver }) {
         });
 
         try {
-            await fetch('https://formspree.io/f/mnnvldep', {
+            await fetch('https://formspree.io/f/xrblozqr', {
                 method: 'POST',
                 body: dataToSend,
                 headers: { 'Accept': 'application/json' }
@@ -864,13 +866,13 @@ function OnboardingPage({ initialData, onStartOver }) {
                              <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-2">Social Media Accounts</label>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                    {['Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'TikTok', 'YouTube'].map(social => <div key={social}><input type="checkbox" name="socialMedia" value={social} onChange={handleChange} /> <label className="ml-2">{social}</label></div>)}
+                                    {['Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'TikTok', 'YouTube'].map(social => <div key={social}><input type="checkbox" name="socialMedia" value={social} onChange={handleChange} checked={formData.socialMedia.includes(social)} /> <label className="ml-2">{social}</label></div>)}
                                 </div>
                              </div>
                              <div>
                                 <label className="block text-sm font-medium text-slate-300 mb-2">Current Advertising</label>
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                    {['Google Ads', 'Facebook Ads', 'Yellow Pages', 'Local newspapers', 'None'].map(ad => <div key={ad}><input type="checkbox" name="currentAdvertising" value={ad} onChange={handleChange} /> <label className="ml-2">{ad}</label></div>)}
+                                    {['Google Ads', 'Facebook Ads', 'Yellow Pages', 'Local newspapers', 'None'].map(ad => <div key={ad}><input type="checkbox" name="currentAdvertising" value={ad} onChange={handleChange} checked={formData.currentAdvertising.includes(ad)} /> <label className="ml-2">{ad}</label></div>)}
                                 </div>
                              </div>
                         </div>
@@ -883,7 +885,17 @@ function OnboardingPage({ initialData, onStartOver }) {
                                 <div><label className="block text-sm font-medium text-slate-300 mb-1">Primary Business Goal *</label><select name="primaryGoal" value={formData.primaryGoal} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>More customers</option><option>Higher prices</option><option>Better reviews</option><option>Brand awareness</option><option>Expand location</option></select></div>
                                 <div><label className="block text-sm font-medium text-slate-300 mb-1">Monthly Marketing Budget *</label><select name="marketingBudget" value={formData.marketingBudget} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>Under $100</option><option>$100-$300</option><option>$300-$500</option><option>$500-$1000</option><option>$1000+</option></select></div>
                              </div>
-                             <div><label className="block text-sm font-medium text-slate-300 mb-1">Target Customer Age *</label><select name="targetAge" value={formData.targetAge} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>18-25</option><option>26-35</option><option>36-45</option><option>46-55</option><option>55+</option><option>All ages</option></select></div>
+                             <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Target Customer Age *</label>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                    {['18-25', '26-35', '36-45', '46-55', '55+', 'All ages'].map(age => (
+                                        <div key={age} className="flex items-center">
+                                            <input type="checkbox" id={`age-${age}`} name="targetAge" value={age} checked={formData.targetAge.includes(age)} onChange={handleChange} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-blue-600" />
+                                            <label htmlFor={`age-${age}`} className="ml-2 text-sm">{age}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                              <div><label className="block text-sm font-medium text-slate-300 mb-1">Main Competitors</label><input type="text" name="competitors" value={formData.competitors} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="e.g., Competitor A, Competitor B" /></div>
                              <div><label className="block text-sm font-medium text-slate-300 mb-1">What makes you different?</label><textarea name="differentiators" value={formData.differentiators} onChange={handleChange} rows="3" className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" maxLength="300"></textarea></div>
                              <div><label className="block text-sm font-medium text-slate-300 mb-1">Biggest Marketing Challenge *</label><select name="biggestChallenge" value={formData.biggestChallenge} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>Getting more leads</option><option>Getting reviews</option><option>Beating competitors</option><option>Not enough time</option><option>Managing reviews</option><option>Competing on price</option><option>Standing out</option></select></div>
@@ -914,7 +926,14 @@ function OnboardingPage({ initialData, onStartOver }) {
                                 <div><h3 className="font-bold text-blue-400">Services & Operations</h3><p>Type: {formData.businessType.split('.')[1]}. Services: {formData.services.join(', ') || 'N/A'}. Custom: {formData.customServices || 'N/A'}</p></div>
                                 <div><h3 className="font-bold text-blue-400">Online Presence</h3><p>Website: {formData.websiteUrl || 'N/A'}. Social: {formData.socialMedia.join(', ') || 'N/A'}</p></div>
                                 <div><h3 className="font-bold text-blue-400">Goals & Marketing</h3><p>Goal: {formData.primaryGoal}. Budget: {formData.marketingBudget}. Challenge: {formData.biggestChallenge}</p></div>
-                                <div><h3 className="font-bold text-blue-400">Media Assets</h3><p>Logo: {formData.logo ? 'Uploaded' : 'No'}. Photos: {formData.interiorPhotos.length + formData.exteriorPhotos.length + formData.workSamples.length + formData.teamPhotos.length} files. Menu: {formData.menuUpload ? 'Uploaded' : 'No'}</p></div>
+                                <div><h3 className="font-bold text-blue-400">Media Assets</h3><p>Logo: {formData.logo ? 'Uploaded' : 'No'}. Photos: {(formData.interiorPhotos?.length || 0) + (formData.exteriorPhotos?.length || 0) + (formData.workSamples?.length || 0) + (formData.teamPhotos?.length || 0)} files. Menu: {formData.menuUpload ? 'Uploaded' : 'No'}</p></div>
+                            </div>
+                            <div className="flex items-start p-4 bg-slate-900/50 rounded-md">
+                                <input type="checkbox" id="manageMessages" name="manageMessages" checked={formData.manageMessages} onChange={handleChange} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-blue-600 focus:ring-blue-500 mt-1 flex-shrink-0" />
+                                <label htmlFor="manageMessages" className="ml-3">
+                                    <span className="font-bold text-white">Add Message Management - $10/mo</span>
+                                    <span className="block text-sm text-slate-400">Let our AI handle responding to your Google Business messages to capture leads faster.</span>
+                                </label>
                             </div>
                             <div className="flex items-start"><input type="checkbox" id="confirmInfo" name="confirmInfo" checked={formData.confirmInfo} onChange={handleChange} className="h-4 w-4 mt-1" required /><label htmlFor="confirmInfo" className="ml-2">I confirm the above information is correct.</label></div>
                             <div className="flex items-start"><input type="checkbox" id="authorize" name="authorize" checked={formData.authorize} onChange={handleChange} className="h-4 w-4 mt-1" required /><label htmlFor="authorize" className="ml-2">I authorize SEO Sentinel to request management access to my Google Business Profile.</label></div>
@@ -924,7 +943,15 @@ function OnboardingPage({ initialData, onStartOver }) {
                     <div className="flex justify-between mt-8">
                         {page > 1 && <button type="button" onClick={prevPage} className="bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg">Back</button>}
                         {page < 7 && <button type="button" onClick={nextPage} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg ml-auto">Next</button>}
-                        {page === 7 && <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg ml-auto">Submit & Authorize</button>}
+                        {page === 7 && (
+                            <button 
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg ml-auto disabled:bg-green-800 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? 'Processing...' : `Submit & Authorize`}
+                            </button>
+                        )}
                     </div>
                 </form>
             </div>
@@ -947,7 +974,7 @@ function HeroAndAuditSection() {
         
         // First, submit the lead data to a service like Formspree for tracking.
         try {
-            await fetch('https://formspree.io/f/mnnvldep', {
+            await fetch('https://formspree.io/f/xrblozqr', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -1063,6 +1090,9 @@ function PricingSection() {
                         <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Priority customer support</li>
                         <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> No contracts or setup fees</li>
                     </ul>
+                     <div className="text-center">
+                        <a href="https://buy.stripe.com/28EcN43JX5HW1hBgXb" className="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg">Get Started</a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1168,3 +1198,4 @@ function App() {
 }
 
 export default App;
+
