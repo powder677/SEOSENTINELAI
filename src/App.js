@@ -810,11 +810,5 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                 </div>
             );
         }
-
-        // --- Render the App ---
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-
-    </script>
-</body>
-</html>
+export default App;
+l>
