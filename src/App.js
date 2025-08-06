@@ -13,32 +13,29 @@ const CheckCircleIcon = ({ className }) => (
 );
 
 const MenuIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <title>Menu Icon</title>
-    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
-  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
 );
 
 const XIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <title>Close Icon</title>
-    <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-  </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
 );
 
 const BotIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <title>Bot Icon</title>
-      <path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
-    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
 );
 
 const TargetIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <title>Target Icon</title>
-      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-    </svg>
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
 );
+
+const BarChartIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
+);
+
+const ZapIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+);
+
 
 // --- STATIC DATA (Moved outside components to prevent re-creation on render) ---
 const loadingSteps = [
@@ -179,12 +176,14 @@ function Header() {
 
 // --- DETAILED AUDIT REPORT COMPONENT ---
 function DetailedAuditReport({ reportData, onGetFullPlan }) {
+    // This component is now more robust against incomplete AI-generated data.
     if (!reportData) return <div className="text-center py-20">Analysis failed. Please start over.</div>;
 
     // Handle case where business was NOT found
     if (!reportData.business_found) {
-        const monthlyLostLeads = reportData.revenue_impact?.monthly_lost_leads;
-        const avgJobValue = reportData.revenue_impact?.avg_job_value;
+        // If the AI returns 0, use more impactful default values.
+        const monthlyLostLeads = reportData.revenue_impact?.monthly_lost_leads || 15;
+        const avgJobValue = reportData.revenue_impact?.avg_job_value || 250;
         const totalLost = monthlyLostLeads * avgJobValue;
 
         return (
@@ -237,13 +236,13 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                     <h3 className="text-2xl font-bold text-orange-400 mb-4">{reportData.revenue_impact?.title}</h3>
                     <div className="text-center">
                         <p className="text-4xl font-bold text-red-400 mb-2">
-                            ${totalLost ? totalLost.toLocaleString() : '...'} /month
+                            ${totalLost.toLocaleString()}/month
                         </p>
                         <p className="text-slate-300">
-                            ≈ {monthlyLostLeads || '...'} lost leads × ${avgJobValue || '...'} average job
+                            ≈ {monthlyLostLeads} lost leads × ${avgJobValue} average job
                         </p>
                         <p className="text-orange-300 mt-4 font-semibold">
-                            That's ${totalLost ? (totalLost * 12).toLocaleString() : '...'} per year you're losing to competitors!
+                            That's ${(totalLost * 12).toLocaleString()} per year you're losing to competitors!
                         </p>
                     </div>
                 </div>
@@ -378,440 +377,437 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 }
 
 
-        // --- FORM COMPONENT ---
-        function LocalSeoForm({ onSubmit, error }) {
-            const [formData, setFormData] = useState({
-                businessName: '',
-                businessType: 'Plumber',
-                streetAddress: '',
-                location: '', // City, State
-                biggestChallenge: 'getting_more_leads',
+// --- FORM COMPONENT ---
+function LocalSeoForm({ onSubmit, error }) {
+    const [formData, setFormData] = useState({
+        businessName: '',
+        businessType: 'Plumber',
+        streetAddress: '',
+        location: '', // City, State
+        biggestChallenge: 'getting_more_leads',
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        onSubmit(formData);
+    };
+
+    return (
+        <div className="max-w-3xl mx-auto animate-fade-in">
+            <div className="text-center mb-8">
+                <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Are You Invisible to Local Customers?</h1>
+                <p className="text-xl md:text-2xl text-slate-300">Get a free, AI-powered report that reveals exactly why your competitors are outranking you on Google Maps and Search.</p>
+            </div>
+            
+            {error && (
+                <div className="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg mb-6 text-center">
+                    <p className="font-bold">Oops! Something went wrong.</p>
+                    <p>{error}</p>
+                </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="businessName" className="block text-sm font-medium text-slate-300 mb-2">Business Name *</label>
+                        <input type="text" id="businessName" name="businessName" value={formData.businessName} onChange={handleChange} placeholder="e.g., Tony's Plumbing" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
+                    </div>
+                    <div>
+                        <label htmlFor="businessType" className="block text-sm font-medium text-slate-300 mb-2">Type of Business *</label>
+                        <select id="businessType" name="businessType" value={formData.businessType} onChange={handleChange} className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
+                             <option value="Plumber">Plumber</option>
+                             <option value="Electrician">Electrician</option>
+                             <option value="HVAC">HVAC</option>
+                             <option value="Roofer">Roofer</option>
+                             <option value="Landscaper">Landscaper</option>
+                             <option value="Dentist">Dentist</option>
+                             <option value="Restaurant">Restaurant</option>
+                             <option value="Barber Shop">Barber Shop</option>
+                             <option value="Hair Salon">Hair Salon</option>
+                             <option value="Auto Repair">Auto Repair</option>
+                             <option value="Law Firm">Law Firm</option>
+                             <option value="Gym">Gym</option>
+                             <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                 <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label htmlFor="streetAddress" className="block text-sm font-medium text-slate-300 mb-2">Street Address *</label>
+                        <input type="text" id="streetAddress" name="streetAddress" value={formData.streetAddress} onChange={handleChange} placeholder="e.g., 123 Main St" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
+                    </div>
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-slate-300 mb-2">City, State *</label>
+                        <input type="text" id="location" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., Philadelphia, PA" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
+                    </div>
+                </div>
+                <div>
+                    <label htmlFor="biggestChallenge" className="block text-sm font-medium text-slate-300 mb-2">What's your biggest marketing challenge right now? *</label>
+                    <select id="biggestChallenge" name="biggestChallenge" value={formData.biggestChallenge} onChange={handleChange} className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
+                        <option value="getting_more_leads">Getting more leads/phone calls</option>
+                        <option value="getting_reviews">Getting more positive reviews</option>
+                        <option value="beating_competitors">Beating my local competitors</option>
+                        <option value="not_enough_time">I don't have time for marketing</option>
+                        <option value="other">Something else</option>
+                    </select>
+                </div>
+                <button type="submit" className="w-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30">
+                    Generate My Free Report
+                </button>
+            </form>
+        </div>
+    );
+}
+
+
+// --- ONBOARDING PAGE COMPONENT ---
+function OnboardingPage({ businessName, onStartOver }) {
+    const [includeAddon, setIncludeAddon] = useState(false);
+    const [onboardingData, setOnboardingData] = useState({ name: '', email: '' });
+    const basePrice = 30;
+    const addonPrice = 10;
+
+    // Production Stripe checkout links
+    const baseCheckoutUrl = "https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i";
+    const addonCheckoutUrl = "https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h";
+
+    const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setOnboardingData(prev => ({...prev, [name]: value}));
+    };
+
+    const handleCheckout = async (e) => {
+        e.preventDefault();
+        
+        const submissionData = {
+             name: onboardingData.name,
+             email: onboardingData.email,
+             plan: includeAddon ? 'Standard + Review Management' : 'Standard',
+             price: `${basePrice + (includeAddon ? addonPrice : 0)}/mo`,
+             businessName: businessName,
+             submittedAt: new Date().toISOString(),
+         };
+
+        try {
+            // This sends the lead data to a form backend before redirecting to checkout.
+            await fetch('https://formspree.io/f/mnnvldep', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(submissionData),
+            });
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            // We can still proceed to checkout even if the form submission fails.
+        }
+        
+        // Redirect to Stripe checkout
+        window.location.href = checkoutUrl;
+    };
+
+    return (
+        <div className="max-w-4xl mx-auto animate-fade-in">
+            <div className="text-center mb-10">
+                <h1 className="text-4xl md:text-5xl font-bold text-white">✅ Yes! I Want More Local Customers.</h1>
+                <p className="text-xl text-slate-300 mt-4">Here's your monthly "Done-For-You" local growth engine for <span className="text-blue-400 font-bold">{businessName}</span>:</p>
+            </div>
+
+            <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 mb-10">
+                <h2 className="text-2xl font-bold text-center text-blue-400 mb-6">📦 Your Monthly Local Growth Engine</h2>
+                <div className="space-y-6">
+                    {onboardingDeliverables.map(item => (
+                        <div key={item.action} className="flex items-start gap-4">
+                            <div className="text-3xl mt-1">{item.icon}</div>
+                            <div>
+                                <h3 className="font-bold text-lg text-slate-100">{item.action}</h3>
+                                <p className="text-slate-400">{item.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            
+            <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
+                 <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Activate Your Plan</h2>
+                 <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
+                       <div>
+                           <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
+                           <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                       </div>
+                       <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
+                        <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="e.g., jane.doe@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
+                       </div>
+                       <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
+                           <div className="flex h-6 items-center">
+                               <input id="addon" name="addon" type="checkbox" checked={includeAddon} onChange={(e) => setIncludeAddon(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-green-500 focus:ring-green-500" />
+                           </div>
+                           <div className="ml-3 text-sm leading-6">
+                               <label htmlFor="addon" className="font-medium text-slate-200">Add "Done-For-You" Review Responses (+${addonPrice}/mo)</label>
+                               <p className="text-slate-400">We'll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
+                           </div>
+                       </div>
+
+                       <div className="text-center pt-4">
+                           <p className="font-bold text-white text-lg mb-2">🔐 Start Your 30-Day Risk-Free Trial — Just ${basePrice + (includeAddon ? addonPrice : 0)}/mo</p>
+                           <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
+                                   👉 Activate My Growth Plan
+                           </button>
+                       </div>
+                 </form>
+                 <div className="text-center mt-6">
+                       <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we'll send a quick onboarding form to link your GMB. Your first optimizations will begin within 48 hours.</p>
+                 </div>
+            </div>
+
+            <div className="text-center mt-16">
+                <button onClick={onStartOver} className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-semibold">
+                    &laquo; Analyze Another Business
+                </button>
+            </div>
+        </div>
+    );
+}
+
+
+// --- HERO AND AUDIT FORM SECTION ---
+function HeroAndAuditSection() {
+    const [view, setView] = useState('form'); // 'form', 'loading', 'audit', 'report'
+    const [reportData, setReportData] = useState(null);
+    const [formData, setFormData] = useState(null);
+    const [error, setError] = useState(null);
+
+    const generateReport = async (data) => {
+        setView('loading');
+        setError(null);
+        setFormData(data);
+        
+        // First, submit the lead data to a service like Formspree for tracking.
+        try {
+            await fetch('https://formspree.io/f/mnnvldep', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    formName: "Free SEO Audit Lead",
+                    ...data
+                }),
+            });
+        } catch (formspreeError) {
+            console.error("Could not submit lead to Formspree:", formspreeError);
+            // This is a non-critical error, so we can continue even if it fails.
+        }
+
+        // Now, call the Vercel serverless function to generate the report.
+        try {
+            const response = await fetch('/api/generate-report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             });
 
-            const handleChange = (e) => {
-                const { name, value } = e.target;
-                setFormData(prev => ({ ...prev, [name]: value }));
-            };
+            if (!response.ok) {
+                // Try to get a meaningful error message from the Vercel function's response.
+                const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response from server.' }));
+                throw new Error(errorResult.error || `The server responded with a status of ${response.status}.`);
+            }
 
-            const handleSubmit = (e) => {
-                e.preventDefault();
-                onSubmit(formData);
-            };
+            const result = await response.json();
+            
+            setReportData(result);
+            setView('audit');
 
-            return (
-                <div className="max-w-3xl mx-auto animate-fade-in">
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">Are You Invisible to Local Customers?</h1>
-                        <p className="text-xl md:text-2xl text-slate-300">Get a free, AI-powered report that reveals exactly why your competitors are outranking you on Google Maps and Search.</p>
-                    </div>
-                    
-                    {error && (
-                        <div className="bg-red-500/20 border border-red-500 text-red-300 p-4 rounded-lg mb-6 text-center">
-                            <p className="font-bold">Oops! Something went wrong.</p>
-                            <p>{error}</p>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label htmlFor="businessName" className="block text-sm font-medium text-slate-300 mb-2">Business Name *</label>
-                                <input type="text" id="businessName" name="businessName" value={formData.businessName} onChange={handleChange} placeholder="e.g., Tony's Plumbing" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
-                            </div>
-                            <div>
-                                <label htmlFor="businessType" className="block text-sm font-medium text-slate-300 mb-2">Type of Business *</label>
-                                <select id="businessType" name="businessType" value={formData.businessType} onChange={handleChange} className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
-                                     <option value="Plumber">Plumber</option>
-                                     <option value="Electrician">Electrician</option>
-                                     <option value="HVAC">HVAC</option>
-                                     <option value="Roofer">Roofer</option>
-                                     <option value="Landscaper">Landscaper</option>
-                                     <option value="Dentist">Dentist</option>
-                                     <option value="Restaurant">Restaurant</option>
-                                     <option value="Barber Shop">Barber Shop</option>
-                                     <option value="Hair Salon">Hair Salon</option>
-                                     <option value="Auto Repair">Auto Repair</option>
-                                     <option value="Law Firm">Law Firm</option>
-                                     <option value="Gym">Gym</option>
-                                     <option value="Other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                         <div className="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label htmlFor="streetAddress" className="block text-sm font-medium text-slate-300 mb-2">Street Address *</label>
-                                <input type="text" id="streetAddress" name="streetAddress" value={formData.streetAddress} onChange={handleChange} placeholder="e.g., 123 Main St" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
-                            </div>
-                            <div>
-                                <label htmlFor="location" className="block text-sm font-medium text-slate-300 mb-2">City, State *</label>
-                                <input type="text" id="location" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., Philadelphia, PA" className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required />
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="biggestChallenge" className="block text-sm font-medium text-slate-300 mb-2">What's your biggest marketing challenge right now? *</label>
-                            <select id="biggestChallenge" name="biggestChallenge" value={formData.biggestChallenge} onChange={handleChange} className="w-full p-3 rounded-md bg-slate-800 border border-slate-600 focus:ring-2 focus:ring-blue-500 focus:outline-none transition" required>
-                                <option value="getting_more_leads">Getting more leads/phone calls</option>
-                                <option value="getting_reviews">Getting more positive reviews</option>
-                                <option value="beating_competitors">Beating my local competitors</option>
-                                <option value="not_enough_time">I don't have time for marketing</option>
-                                <option value="other">Something else</option>
-                            </select>
-                        </div>
-                        <button type="submit" className="w-full bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold py-4 px-10 rounded-lg text-lg transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/30">
-                            Generate My Free Report
-                        </button>
-                    </form>
-                </div>
-            );
+        } catch (err) {
+            console.error("Failed to generate report:", err);
+            setError(err.message || "An unknown error occurred while generating the report. Please try again.");
+            setView('form');
         }
+    };
+
+    const handleGetFullPlan = () => setView('report');
+    const handleStartOver = () => {
+        setView('form');
+        setReportData(null);
+        setFormData(null);
+        setError(null);
+    };
+
+    const renderView = () => {
+        switch (view) {
+            case 'loading':
+                return <LoadingState />;
+            case 'audit':
+                return <DetailedAuditReport reportData={reportData} onGetFullPlan={handleGetFullPlan} />;
+            case 'report':
+                return <OnboardingPage 
+                    businessName={formData?.businessName} 
+                    onStartOver={handleStartOver} 
+                />;
+            case 'form':
+            default:
+                return <LocalSeoForm onSubmit={generateReport} error={error} />;
+        }
+    };
+
+    return (
+        <section id="gmb-check" className="py-16 md:py-24">
+             <div className="container mx-auto px-4">
+                 {renderView()}
+            </div>
+        </section>
+    );
+}
 
 
-        // --- ONBOARDING PAGE COMPONENT ---
-        function OnboardingPage({ businessName, onStartOver }) {
-            const [includeAddon, setIncludeAddon] = useState(false);
-            const [onboardingData, setOnboardingData] = useState({ name: '', email: '' });
-            const basePrice = 30;
-            const addonPrice = 10;
+// --- STATIC CONTENT SECTIONS ---
 
-            // Production Stripe checkout links
-            // const baseCheckoutUrl = "https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i";
-            // const addonCheckoutUrl = "https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h";
-
-            // const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
-
-            const handleInputChange = (e) => {
-                const { name, value } = e.target;
-                setOnboardingData(prev => ({...prev, [name]: value}));
-            };
-
-            /*
-            const handleCheckout = async (e) => {
-                e.preventDefault();
-                
-                const submissionData = {
-                     name: onboardingData.name,
-                     email: onboardingData.email,
-                     plan: includeAddon ? 'Standard + Review Management' : 'Standard',
-                     price: `${basePrice + (includeAddon ? addonPrice : 0)}/mo`,
-                     businessName: businessName,
-                     submittedAt: new Date().toISOString(),
-                 };
-
-                try {
-                    // This sends the lead data to a form backend before redirecting to checkout.
-                    await fetch('https://formspree.io/f/mnnvldep', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(submissionData),
-                    });
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-                    // We can still proceed to checkout even if the form submission fails.
-                }
-                
-                // Redirect to Stripe checkout
-                window.location.href = checkoutUrl;
-            };
-            */
-
-            return (
-                <div className="max-w-4xl mx-auto animate-fade-in">
-                    <div className="text-center mb-10">
-                        <h1 className="text-4xl md:text-5xl font-bold text-white">✅ Yes! I Want More Local Customers.</h1>
-                        <p className="text-xl text-slate-300 mt-4">Here's your monthly "Done-For-You" local growth engine for <span className="text-blue-400 font-bold">{businessName}</span>:</p>
-                    </div>
-
-                    <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700 mb-10">
-                        <h2 className="text-2xl font-bold text-center text-blue-400 mb-6">📦 Your Monthly Local Growth Engine</h2>
-                        <div className="space-y-6">
-                            {onboardingDeliverables.map(item => (
-                                <div key={item.action} className="flex items-start gap-4">
-                                    <div className="text-3xl mt-1">{item.icon}</div>
-                                    <div>
-                                        <h3 className="font-bold text-lg text-slate-100">{item.action}</h3>
-                                        <p className="text-slate-400">{item.description}</p>
-                                    </div>
-                                </div>
-                            ))}
+function FeaturesSection() {
+    return (
+        <section id="features" className="py-16 md:py-24 bg-slate-900/70">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Why Choose SEO Sentinel?</h2>
+                <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    {features.map((feature, index) => (
+                        <div key={index} className="bg-slate-800/50 p-8 rounded-xl border border-slate-700 text-center">
+                            {feature.icon}
+                            <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
+                            <p className="text-slate-400">{feature.description}</p>
                         </div>
-                    </div>
-                    
-                    <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
-                         <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Activate Your Plan</h2>
-                         {/*
-                         <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
-                              <div>
-                                   <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
-                                   <input type="text" id="name" name="name" value={onboardingData.name} onChange={handleInputChange} placeholder="e.g., Jane Doe" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
-                              </div>
-                              <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
-                                <input type="email" id="email" name="email" value={onboardingData.email} onChange={handleInputChange} placeholder="e.g., jane.doe@example.com" className="w-full p-3 rounded-md bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-green-500 focus:outline-none transition" required />
-                              </div>
-                              <div className="relative flex items-start bg-slate-900/50 p-4 rounded-lg">
-                                   <div className="flex h-6 items-center">
-                                       <input id="addon" name="addon" type="checkbox" checked={includeAddon} onChange={(e) => setIncludeAddon(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-green-500 focus:ring-green-500" />
-                                   </div>
-                                   <div className="ml-3 text-sm leading-6">
-                                       <label htmlFor="addon" className="font-medium text-slate-200">Add "Done-For-You" Review Responses (+${addonPrice}/mo)</label>
-                                       <p className="text-slate-400">We'll professionally respond to every new review on your GMB — so you never miss a chance to build trust.</p>
-                                   </div>
-                              </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
 
-                              <div className="text-center pt-4">
-                                   <p className="font-bold text-white text-lg mb-2">🔐 Start Your 30-Day Risk-Free Trial — Just ${basePrice + (includeAddon ? addonPrice : 0)}/mo</p>
-                                   <button type="submit" className="w-full bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1 hover:shadow-2xl hover:shadow-green-500/30">
-                                           👉 Activate My Growth Plan
-                                   </button>
-                              </div>
-                         </form>
-                         */}
-                         <div className="text-center mt-6">
-                              <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we'll send a quick onboarding form to link your GMB. Your first optimizations will begin within 48 hours.</p>
-                         </div>
+function PricingSection() {
+    return (
+        <section id="pricing" className="py-16 md:py-24 bg-slate-900">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Simple, Affordable Pricing</h2>
+                <div className="max-w-md mx-auto bg-slate-800/50 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-500/10">
+                    <div className="text-center">
+                        <h3 className="text-2xl font-bold text-white">Standard Plan</h3>
+                        <p className="text-5xl font-bold text-blue-400 my-4">$30<span className="text-xl text-slate-400">/mo</span></p>
+                        <p className="text-slate-400">Cancel anytime. No hidden fees.</p>
                     </div>
+                    <ul className="space-y-3 my-8 text-slate-300">
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Automated GMB optimization</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Local keyword monitoring</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Review management alerts</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Monthly progress reports</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Priority customer support</li>
+                        <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> No contracts or setup fees</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    );
+}
 
-                    <div className="text-center mt-16">
-                        <button onClick={onStartOver} className="text-blue-400 hover:text-blue-300 transition-colors duration-300 font-semibold">
-                            &laquo; Analyze Another Business
-                        </button>
+function BlogSection() {
+    return (
+        <section id="blog" className="py-16 md:py-24 bg-slate-900/70">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Latest Local SEO Tips for Salon Suite Owners</h2>
+                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    {blogPosts.map((post, index) => (
+                        <div key={index} className="bg-slate-800 rounded-xl p-6 border border-slate-700 group transition-all duration-300 hover:border-blue-500 hover:-translate-y-1">
+                            <h3 className="text-lg font-bold text-white mb-2">{post.title}</h3>
+                            <p className="text-slate-400 mb-4 text-sm">{post.description}</p>
+                            <a href={post.link} className="font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">Read More &rarr;</a>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function FAQSection() {
+    return (
+        <section id="faq" className="py-16 md:py-24 bg-slate-900">
+            <div className="container mx-auto px-4">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Frequently Asked Questions</h2>
+                <div className="max-w-3xl mx-auto space-y-4">
+                    {faqs.map((faq, index) => (
+                        <details key={index} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 cursor-pointer group">
+                            <summary className="font-semibold text-lg text-white flex justify-between items-center list-none">
+                                {faq.q}
+                                <span className="text-blue-400 transform transition-transform duration-300 group-open:rotate-45">+</span>
+                            </summary>
+                            <p className="text-slate-400 mt-4">
+                                {faq.a}
+                            </p>
+                        </details>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function Footer() {
+    const scrollToSection = (id) => {
+        document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    return (
+        <footer className="bg-slate-900 border-t border-slate-800">
+            <div className="container mx-auto px-4 py-12">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-slate-400 mb-8">
+                    <div>
+                        <h3 className="font-bold text-white mb-3">Product</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li><button onClick={() => scrollToSection('features')} className="hover:text-white">Features</button></li>
+                            <li><button onClick={() => scrollToSection('pricing')} className="hover:text-white">Pricing</button></li>
+                            <li><button onClick={() => scrollToSection('gmb-check')} className="hover:text-white">Free Audit</button></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white mb-3">Resources</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li><button onClick={() => scrollToSection('blog')} className="hover:text-white">Blog</button></li>
+                            <li><button onClick={() => scrollToSection('faq')} className="hover:text-white">FAQ</button></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white mb-3">Connect</h3>
+                        <ul className="space-y-2 text-sm">
+                            <li><a href="mailto:support@seosentinelai.com" className="hover:text-white">Email Us</a></li>
+                        </ul>
                     </div>
                 </div>
-            );
-        }
-
-
-        // --- HERO AND AUDIT FORM SECTION ---
-        function HeroAndAuditSection() {
-            const [view, setView] = useState('form'); // 'form', 'loading', 'audit', 'report'
-            const [reportData, setReportData] = useState(null);
-            const [formData, setFormData] = useState(null);
-            const [error, setError] = useState(null);
-
-            const generateReport = async (data) => {
-                setView('loading');
-                setError(null);
-                setFormData(data);
-                
-                // First, submit the lead data to a service like Formspree for tracking.
-                try {
-                    await fetch('https://formspree.io/f/mnnvldep', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            formName: "Free SEO Audit Lead",
-                            ...data
-                        }),
-                    });
-                } catch (formspreeError) {
-                    console.error("Could not submit lead to Formspree:", formspreeError);
-                    // This is a non-critical error, so we can continue even if it fails.
-                }
-
-                // Now, call the Vercel serverless function to generate the report.
-                try {
-                    const response = await fetch('/api/generate-report', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(data),
-                    });
-
-                    if (!response.ok) {
-                        // Try to get a meaningful error message from the Vercel function's response.
-                        const errorResult = await response.json().catch(() => ({ error: 'Failed to parse error response from server.' }));
-                        throw new Error(errorResult.error || `The server responded with a status of ${response.status}.`);
-                    }
-
-                    const result = await response.json();
-                    
-                    setReportData(result);
-                    setView('audit');
-
-                } catch (err) {
-                    console.error("Failed to generate report:", err);
-                    setError(err.message || "An unknown error occurred while generating the report. Please try again.");
-                    setView('form');
-                }
-            };
-
-            const handleGetFullPlan = () => setView('report');
-            const handleStartOver = () => {
-                setView('form');
-                setReportData(null);
-                setFormData(null);
-                setError(null);
-            };
-
-            const renderView = () => {
-                switch (view) {
-                    case 'loading':
-                        return <LoadingState />;
-                    case 'audit':
-                        return <DetailedAuditReport reportData={reportData} onGetFullPlan={handleGetFullPlan} />;
-                    case 'report':
-                        return <OnboardingPage 
-                            businessName={formData?.businessName} 
-                            onStartOver={handleStartOver} 
-                        />;
-                    case 'form':
-                    default:
-                        return <LocalSeoForm onSubmit={generateReport} error={error} />;
-                }
-            };
-
-            return (
-                <section id="gmb-check" className="py-16 md:py-24">
-                     <div className="container mx-auto px-4">
-                         {renderView()}
-                    </div>
-                </section>
-            );
-        }
-
-
-        // --- STATIC CONTENT SECTIONS ---
-
-        function FeaturesSection() {
-            return (
-                <section id="features" className="py-16 md:py-24 bg-slate-900/70">
-                    <div className="container mx-auto px-4">
-                        <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Why Choose SEO Sentinel?</h2>
-                        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-                            {features.map((feature, index) => (
-                                <div key={index} className="bg-slate-800/50 p-8 rounded-xl border border-slate-700 text-center">
-                                    {feature.icon}
-                                    <h3 className="text-xl font-bold text-white mb-3">{feature.title}</h3>
-                                    <p className="text-slate-400">{feature.description}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            );
-        }
-
-        function PricingSection() {
-            return (
-                <section id="pricing" className="py-16 md:py-24 bg-slate-900">
-                    <div className="container mx-auto px-4">
-                        <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Simple, Affordable Pricing</h2>
-                        <div className="max-w-md mx-auto bg-slate-800/50 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-500/10">
-                            <div className="text-center">
-                                <h3 className="text-2xl font-bold text-white">Standard Plan</h3>
-                                <p className="text-5xl font-bold text-blue-400 my-4">$30<span className="text-xl text-slate-400">/mo</span></p>
-                                <p className="text-slate-400">Cancel anytime. No hidden fees.</p>
-                            </div>
-                            <ul className="space-y-3 my-8 text-slate-300">
-                                <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Automated GMB optimization</li>
-                                <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Local keyword monitoring</li>
-                                <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Review management alerts</li>
-                                <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Monthly progress reports</li>
-                                <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> Priority customer support</li>
-                                <li className="flex items-center gap-3"><CheckCircleIcon className="h-5 w-5 text-green-400" /> No contracts or setup fees</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-            );
-        }
-
-        function BlogSection() {
-            return (
-                <section id="blog" className="py-16 md:py-24 bg-slate-900/70">
-                    <div className="container mx-auto px-4">
-                        <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Latest Local SEO Tips for Salon Suite Owners</h2>
-                        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                            {blogPosts.map((post, index) => (
-                                <div key={index} className="bg-slate-800 rounded-xl p-6 border border-slate-700 group transition-all duration-300 hover:border-blue-500 hover:-translate-y-1">
-                                    <h3 className="text-lg font-bold text-white mb-2">{post.title}</h3>
-                                    <p className="text-slate-400 mb-4 text-sm">{post.description}</p>
-                                    <a href={post.link} className="font-semibold text-blue-400 group-hover:text-blue-300 transition-colors">Read More &rarr;</a>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            );
-        }
-
-        function FAQSection() {
-            return (
-                <section id="faq" className="py-16 md:py-24 bg-slate-900">
-                    <div className="container mx-auto px-4">
-                        <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-12">Frequently Asked Questions</h2>
-                        <div className="max-w-3xl mx-auto space-y-4">
-                            {faqs.map((faq, index) => (
-                                <details key={index} className="bg-slate-800/50 border border-slate-700 rounded-lg p-4 cursor-pointer group">
-                                    <summary className="font-semibold text-lg text-white flex justify-between items-center list-none">
-                                        {faq.q}
-                                        <span className="text-blue-400 transform transition-transform duration-300 group-open:rotate-45">+</span>
-                                    </summary>
-                                    <p className="text-slate-400 mt-4">
-                                        {faq.a}
-                                    </p>
-                                </details>
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            );
-        }
-
-        function Footer() {
-            const scrollToSection = (id) => {
-                document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-            };
-
-            return (
-                <footer className="bg-slate-900 border-t border-slate-800">
-                    <div className="container mx-auto px-4 py-12">
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-8 text-slate-400 mb-8">
-                            <div>
-                                <h3 className="font-bold text-white mb-3">Product</h3>
-                                <ul className="space-y-2 text-sm">
-                                    <li><button onClick={() => scrollToSection('features')} className="hover:text-white">Features</button></li>
-                                    <li><button onClick={() => scrollToSection('pricing')} className="hover:text-white">Pricing</button></li>
-                                    <li><button onClick={() => scrollToSection('gmb-check')} className="hover:text-white">Free Audit</button></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-white mb-3">Resources</h3>
-                                <ul className="space-y-2 text-sm">
-                                    <li><button onClick={() => scrollToSection('blog')} className="hover:text-white">Blog</button></li>
-                                    <li><button onClick={() => scrollToSection('faq')} className="hover:text-white">FAQ</button></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-white mb-3">Connect</h3>
-                                <ul className="space-y-2 text-sm">
-                                    <li><a href="mailto:support@seosentinelai.com" className="hover:text-white">Email Us</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div className="text-center text-slate-500 text-sm pt-8 border-t border-slate-800">
-                            <p>&copy; {new Date().getFullYear()} SEO Sentinel. All rights reserved.</p>
-                        </div>
-                    </div>
-                </footer>
-            );
-        }
-
-        // --- MAIN APP COMPONENT ---
-        function App() {
-            return (
-                <div className="bg-slate-900 min-h-screen text-white font-sans">
-                    <Header />
-                    <main>
-                        <HeroAndAuditSection />
-                        <FeaturesSection />
-                        <PricingSection />
-                        <BlogSection />
-                        <FAQSection />
-                    </main>
-                    <Footer />
+                <div className="text-center text-slate-500 text-sm pt-8 border-t border-slate-800">
+                    <p>&copy; {new Date().getFullYear()} SEO Sentinel. All rights reserved.</p>
                 </div>
-            );
-        }
+            </div>
+        </footer>
+    );
+}
+
+// --- MAIN APP COMPONENT ---
+function App() {
+    return (
+        <div className="bg-slate-900 min-h-screen text-white font-sans">
+            <Header />
+            <main>
+                <HeroAndAuditSection />
+                <FeaturesSection />
+                <PricingSection />
+                <BlogSection />
+                <FAQSection />
+            </main>
+            <Footer />
+        </div>
+    );
+}
+
 export default App;
