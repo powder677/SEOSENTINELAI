@@ -2,7 +2,7 @@
 // Modified to use fewer form fields, adopt a more aggressive/urgent tone,
 // and return a new JSON structure for the frontend.
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
     // 1. --- Security and Method Check ---
     if (req.method !== 'POST') {
         res.setHeader('Allow', ['POST']);
@@ -208,3 +208,4 @@ module.exports = async function handler(req, res) {
         });
     }
 }
+
