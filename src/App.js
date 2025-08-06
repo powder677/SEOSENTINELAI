@@ -181,11 +181,6 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
 
     // Handle case where business was NOT found
     if (!reportData.business_found) {
-        // If the AI returns 0, use more impactful default values.
-        const monthlyLostLeads = reportData.revenue_impact?.monthly_lost_leads || 15;
-        const avgJobValue = reportData.revenue_impact?.avg_job_value || 250;
-        const totalLost = monthlyLostLeads * avgJobValue;
-
         return (
             <div className="max-w-4xl mx-auto animate-fade-in">
                 <div className="text-center mb-12">
@@ -236,22 +231,6 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                         ) : (
                              <p className="text-slate-400 col-span-3">Could not retrieve specific competitor data, but they are likely getting the customers you're missing.</p>
                         )}
-                    </div>
-                </div>
-
-                {/* Revenue Impact */}
-                <div className="bg-gradient-to-br from-red-900/50 to-orange-900/50 border-2 border-orange-500 rounded-2xl p-8 mb-8">
-                    <h3 className="text-2xl font-bold text-orange-400 mb-4">{reportData.revenue_impact?.title || 'Estimated Revenue Impact'}</h3>
-                    <div className="text-center">
-                        <p className="text-4xl font-bold text-red-400 mb-2">
-                            ${totalLost.toLocaleString()}/month
-                        </p>
-                        <p className="text-slate-300">
-                            ≈ {monthlyLostLeads} lost leads × ${avgJobValue} average job
-                        </p>
-                        <p className="text-orange-300 mt-4 font-semibold">
-                            That's ${(totalLost * 12).toLocaleString()} per year you're losing to competitors!
-                        </p>
                     </div>
                 </div>
 
@@ -831,4 +810,3 @@ function App() {
 }
 
 export default App;
-
