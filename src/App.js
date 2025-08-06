@@ -2,7 +2,7 @@ import React from 'react';
 // Explicitly destructuring hooks from the React object to address potential build issues.
 const { useState, useEffect } = React;
 
-// --- HELPER ICONS ---
+// --- HELPER IONS ---
 // A collection of SVG icons used throughout the application for a consistent look and feel.
 
 const CheckCircleIcon = ({ className }) => (
@@ -481,6 +481,9 @@ function OnboardingPage({ initialData, onStartOver }) {
         'Barber Shop': ['Haircut', 'Beard Trim', 'Shave', 'Hair Designs', 'Kids Cuts'],
         'Nail Technician': ['Mani', 'Pedi', 'Gel', 'Art', 'Acrylic'],
         'Spa/Esthetics': ['Facials', 'Waxing', 'Massage', 'Lash Extensions', 'Brow Tinting'],
+        'Plumber': ['Emergency Calls', 'Pipe Repair', 'Drain Cleaning', 'Water Heater Installation', 'Inspections'],
+        'Electrician': ['Emergency Calls', 'Wiring', 'Panel Upgrades', 'Lighting Installation', 'Inspections'],
+        'Fitness Coach': [],
     };
 
     const handleChange = (e) => {
@@ -542,10 +545,18 @@ function OnboardingPage({ initialData, onStartOver }) {
     
     if (isSubmitted) {
         return (
-            <div className="max-w-3xl mx-auto text-center py-20 animate-fade-in">
-                <CheckCircleIcon className="h-16 w-16 text-green-400 mx-auto mb-4" />
-                <h1 className="text-3xl font-bold text-white mb-4">Thanks! We’re getting your Google Business Profile ready.</h1>
-                <p className="text-slate-300">Please keep an eye out for an email from Google requesting permission for us to manage your listing — just click "Approve" when it arrives.</p>
+            <div className="max-w-3xl mx-auto text-left py-12 animate-fade-in bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
+                <h2 className="text-2xl font-bold text-white mb-4">☑️ You have confirmed that the above information is accurate.</h2>
+                <h2 className="text-2xl font-bold text-white mb-6">☑️ You have authorized SEO Sentinel to request management access to your Google Business Profile.</h2>
+                
+                <h3 className="text-xl font-semibold text-blue-400 mb-3">📬 What’s Next?</h3>
+                <ul className="list-disc list-inside text-slate-300 space-y-2">
+                    <li>Keep an eye on your inbox – Google will send you a request to approve our access.</li>
+                    <li>We’ll begin setup within 24 hours and send your weekly post preview, review prompt, and optimization plan.</li>
+                    <li>You’ll also receive a QR code to make it easy to collect customer reviews.</li>
+                </ul>
+                <p className="text-slate-400 mt-6">If you need to update your info or have any questions, reply to this email or contact us at <a href="mailto:JasonPulzar@SeosentinelAI.com" className="text-blue-400 hover:underline">JasonPulzar@SeosentinelAI.com</a></p>
+                
                 <button onClick={onStartOver} className="mt-8 text-blue-400 hover:text-blue-300 transition-colors duration-300 font-semibold">
                     &laquo; Back to Home
                 </button>
@@ -609,7 +620,7 @@ function OnboardingPage({ initialData, onStartOver }) {
                     {page === 3 && (
                         <div className="space-y-4 animate-fade-in">
                             <h2 className="text-2xl font-bold text-white">Services Offered</h2>
-                            {serviceOptions[formData.businessType] ? (
+                            {(serviceOptions[formData.businessType] && serviceOptions[formData.businessType].length > 0) ? (
                                 <div className="grid grid-cols-2 gap-4">
                                     {serviceOptions[formData.businessType].map(service => (
                                         <div key={service} className="flex items-center">
