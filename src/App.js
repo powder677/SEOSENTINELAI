@@ -617,6 +617,7 @@ const BusinessHours = ({ hours, setHours }) => {
 function OnboardingPage({ initialData, onStartOver }) {
     const [page, setPage] = useState(1);
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         // Step 1
         businessName: initialData?.businessName || '',
@@ -718,6 +719,7 @@ function OnboardingPage({ initialData, onStartOver }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
         
         const dataToSend = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
@@ -744,6 +746,7 @@ function OnboardingPage({ initialData, onStartOver }) {
         } catch (error) {
             console.error('Error submitting form:', error);
             alert('There was an error submitting your form. Please try again.');
+            setIsSubmitting(false);
         }
     };
     
