@@ -1,8 +1,8 @@
 import React from 'react';
 // Explicitly destructuring hooks from the React object to address potential build issues.
-const { useState, useEffect } = React;
+const { useState, useEffect, useMemo } = React;
 
-// --- HELPER IONS ---
+// --- HELPER ICONS ---
 // A collection of SVG icons used throughout the application for a consistent look and feel.
 
 const CheckCircleIcon = ({ className }) => (
@@ -28,12 +28,8 @@ const TargetIcon = ({ className }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
 );
 
-const BarChartIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>
-);
-
-const ZapIcon = ({ className }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+const UploadCloudIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>
 );
 
 
@@ -453,57 +449,266 @@ function LocalSeoForm({ onSubmit, error }) {
     );
 }
 
+// --- ONBOARDING PAGE COMPONENT (ENHANCED) ---
 
-// --- ONBOARDING PAGE COMPONENT ---
+const serviceOptions = {
+    'Home Services': {
+        'Plumber': ['Emergency Plumbing', 'Leak Repairs', 'Drain Cleaning', 'Water Heater Service', 'Pipe Installation', 'Bathroom Remodeling', 'Kitchen Plumbing', 'Sewer Line Service'],
+        'Electrician': ['Emergency Electrical', 'Wiring and Rewiring', 'Panel Upgrades', 'Lighting Installation', 'Outlet & Switch Services', 'EV Charger Installation', 'Inspections'],
+        'HVAC Contractor': ['AC Repair', 'AC Installation', 'Heating Repair', 'Heating Installation', 'Maintenance', 'Ductwork'],
+        'Roofer': ['Roof Repair', 'Roof Replacement', 'Inspections', 'Gutter Services', 'Emergency Tarping'],
+        'Landscaper/Lawn Care': ['Lawn Mowing', 'Fertilization', 'Weed Control', 'Landscape Design', 'Tree & Shrub Care', 'Irrigation'],
+        'House Cleaner': ['Standard Cleaning', 'Deep Cleaning', 'Move-in/Move-out', 'Window Cleaning', 'Carpet Cleaning'],
+        'Handyman': ['General Repairs', 'Drywall', 'Fixture Installation', 'Assembly', 'Minor Plumbing/Electrical'],
+        'Painter': ['Interior Painting', 'Exterior Painting', 'Cabinet Painting', 'Deck Staining'],
+        'Carpenter': ['Custom Cabinets', 'Trim & Molding', 'Deck Building', 'Framing'],
+        'Pool Service': ['Weekly Maintenance', 'Pool Opening/Closing', 'Equipment Repair', 'Green Pool Cleanup'],
+    },
+    'Health & Wellness': {
+        'Dentist': ['General Checkups & Cleanings', 'Fillings', 'Crowns & Bridges', 'Root Canals', 'Extractions', 'Teeth Whitening', 'Veneers', 'Implants', 'Orthodontics', 'Emergency Dental Care'],
+        'Chiropractor': ['Spinal Adjustments', 'Pain Management', 'Injury Rehab', 'Wellness Care', 'Massage Therapy'],
+        'Physical Therapist': ['Post-Surgery Rehab', 'Sports Injury', 'Chronic Pain', 'Balance Therapy'],
+        'Massage Therapist': ['Swedish', 'Deep Tissue', 'Sports Massage', 'Hot Stone', 'Prenatal'],
+        'Optometrist': ['Eye Exams', 'Contact Lens Fittings', 'Glaucoma Testing', 'Dry Eye Treatment'],
+        'Medical Practice': ['Primary Care', 'Pediatrics', 'Urgent Care', 'Annual Physicals'],
+        'Veterinarian': ['Wellness Exams', 'Vaccinations', 'Dental Care', 'Surgery', 'Emergency Services'],
+        'Mental Health Counselor': ['Individual Therapy', 'Couples Counseling', 'Family Therapy', 'Anxiety/Depression'],
+    },
+    'Automotive': {
+        'Auto Repair Shop': ['Oil Changes', 'Brake Service', 'Transmission Repair', 'Engine Diagnostics', 'AC/Heating Repair', 'Tire Installation', 'Battery Replacement', 'Exhaust System', 'Electrical System', 'Inspections'],
+        'Auto Detailing': ['Interior Detail', 'Exterior Detail', 'Ceramic Coating', 'Paint Correction'],
+        'Tire Shop': ['New Tires', 'Tire Rotation', 'Alignment', 'Tire Repair'],
+        'Oil Change': ['Conventional', 'Synthetic Blend', 'Full Synthetic', 'Fluid Checks'],
+        'Body Shop': ['Collision Repair', 'Dent Removal', 'Painting', 'Frame Straightening'],
+    },
+    'Food & Beverage': {
+        'Restaurant': ['Dine-In', 'Takeout', 'Delivery', 'Catering', 'Private Events', 'Happy Hour', 'Brunch', 'Lunch Specials', 'Dinner Menu', 'Bar Service'],
+        'Coffee Shop': ['Espresso Drinks', 'Brewed Coffee', 'Pastries', 'Sandwiches'],
+        'Bakery': ['Cakes', 'Cupcakes', 'Cookies', 'Bread', 'Pastries'],
+        'Food Truck': ['Street Vending', 'Catering', 'Private Events'],
+        'Catering': ['Weddings', 'Corporate Events', 'Private Parties'],
+        'Bar/Pub': ['Craft Beer', 'Cocktails', 'Wine', 'Bar Food', 'Happy Hour'],
+    },
+    'Professional Services': {
+        'Law Firm': ['Personal Injury', 'Family Law', 'Criminal Defense', 'Real Estate Law', 'Business Law'],
+        'Accounting Firm': ['Tax Preparation', 'Bookkeeping', 'Payroll', 'Audit Services'],
+        'Real Estate Agent': ['Buyer Representation', 'Seller Representation', 'Rentals', 'Consulting'],
+        'Insurance Agency': ['Auto', 'Home', 'Life', 'Business Insurance'],
+        'Marketing Agency': ['SEO', 'Social Media', 'Web Design', 'PPC Ads'],
+        'IT Services': ['Managed IT', 'Cybersecurity', 'Cloud Services', 'Data Backup'],
+        'Consulting': ['Business', 'Financial', 'Marketing', 'IT'],
+    },
+    'Fitness & Recreation': {
+        'Gym/Fitness Center': ['Memberships', 'Personal Training', 'Group Classes', 'Yoga', 'Spin'],
+        'Yoga Studio': ['Vinyasa', 'Hatha', 'Hot Yoga', 'Workshops'],
+        'Martial Arts': ['Karate', 'Judo', 'Brazilian Jiu-Jitsu', 'Taekwondo'],
+        'Dance Studio': ['Ballet', 'Jazz', 'Hip Hop', 'Tap'],
+        'Sports Training': ['Personal Training', 'Group Training', 'Skill-Specific Coaching'],
+    },
+    'Beauty & Personal Care': {
+        'Hair Salon': ["Women's Haircut", "Men's Haircut", "Children's Haircut", 'Hair Color (Full)', 'Highlights/Lowlights', 'Balayage', 'Ombre', 'Hair Treatments', 'Blowouts/Styling', 'Updos', 'Hair Extensions', 'Perms/Relaxers'],
+        'Barber Shop': ['Haircut', 'Beard Trim', 'Hot Towel Shave', 'Fades', 'Designs'],
+        'Nail Technician': ['Manicure', 'Pedicure', 'Gel/Shellac', 'Acrylics', 'Nail Art'],
+        'Spa/Esthetics': ['Facials', 'Waxing', 'Massage', 'Lash Extensions', 'Brow Services', 'Body Treatments'],
+        'Pet Grooming': ['Full Groom', 'Bath & Brush', 'Nail Trim', 'De-shedding'],
+    },
+    'Retail': {
+        'Clothing Store': [],
+        'Jewelry Store': [],
+        'Dry Cleaner': [],
+        'Florist': [],
+    }
+};
+
+const FileInput = ({ label, name, multiple, maxFiles, fileList, onChange, helpText }) => {
+    const fileCount = fileList ? fileList.length : 0;
+    return (
+        <div>
+            <label htmlFor={name} className="block text-sm font-medium text-slate-300 mb-1">{label} *</label>
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-600 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
+                    <UploadCloudIcon className="mx-auto h-12 w-12 text-slate-500" />
+                    <div className="flex text-sm text-slate-400">
+                        <label htmlFor={name} className="relative cursor-pointer bg-slate-800 rounded-md font-medium text-blue-400 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-offset-slate-900 focus-within:ring-blue-500">
+                            <span>Upload files</span>
+                            <input id={name} name={name} type="file" className="sr-only" multiple={multiple} onChange={onChange} accept="image/*,application/pdf" />
+                        </label>
+                        <p className="pl-1">or drag and drop</p>
+                    </div>
+                    <p className="text-xs text-slate-500">{helpText}</p>
+                </div>
+            </div>
+             {fileCount > 0 && (
+                <p className="mt-2 text-sm text-green-400">{fileCount} / {maxFiles} file(s) selected.</p>
+            )}
+        </div>
+    );
+};
+
+const TimePicker = ({ value, onChange }) => {
+    const times = useMemo(() => {
+        const options = [];
+        for (let i = 0; i < 24; i++) {
+            for (let j = 0; j < 60; j += 30) {
+                const hour = i.toString().padStart(2, '0');
+                const minute = j.toString().padStart(2, '0');
+                options.push(`${hour}:${minute}`);
+            }
+        }
+        return options;
+    }, []);
+
+    return (
+        <select value={value} onChange={onChange} className="w-full p-2 rounded-md bg-slate-700 border border-slate-600 text-sm">
+            <option value="">--:--</option>
+            {times.map(time => <option key={time} value={time}>{time}</option>)}
+        </select>
+    );
+};
+
+const BusinessHours = ({ hours, setHours }) => {
+    const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+    const handleTimeChange = (day, type, value) => {
+        setHours(prev => ({
+            ...prev,
+            [day]: { ...prev[day], [type]: value, closed: false }
+        }));
+    };
+    
+    const toggleClosed = (day) => {
+        setHours(prev => ({
+            ...prev,
+            [day]: { ...prev[day], closed: !prev[day].closed }
+        }));
+    };
+
+    const copyToAll = (dayToCopy) => {
+        const sourceHours = hours[dayToCopy];
+        const newHours = { ...hours };
+        days.forEach(day => {
+            newHours[day] = { ...sourceHours };
+        });
+        setHours(newHours);
+    };
+
+    return (
+        <div className="space-y-3">
+            {days.map(day => (
+                <div key={day} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
+                    <span className="font-semibold capitalize text-slate-300">{day}</span>
+                    <div className="flex items-center gap-2">
+                        <TimePicker value={hours[day].open} onChange={(e) => handleTimeChange(day, 'open', e.target.value)} />
+                        <span>to</span>
+                        <TimePicker value={hours[day].close} onChange={(e) => handleTimeChange(day, 'close', e.target.value)} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                         <input type="checkbox" checked={hours[day].closed} onChange={() => toggleClosed(day)} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-blue-600"/>
+                         <label className="text-sm">Closed</label>
+                    </div>
+                    <button type="button" onClick={() => copyToAll(day)} className="text-xs text-blue-400 hover:underline text-left md:text-right">Copy to all</button>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+
 function OnboardingPage({ initialData, onStartOver }) {
     const [page, setPage] = useState(1);
     const [formData, setFormData] = useState({
+        // Step 1
         businessName: initialData?.businessName || '',
-        streetAddress: initialData?.streetAddress || '',
-        location: initialData?.location || '',
         ownerName: '',
         email: '',
         phone: '',
-        businessType: 'Hair Salon',
+        streetAddress: initialData?.streetAddress || '',
+        location: initialData?.location || '', // city, state
+        // Step 2
+        businessType: 'Home Services.Plumber',
         services: [],
-        otherServices: '',
+        customServices: '',
+        // Step 3
+        yearsInBusiness: '',
+        numEmployees: '',
+        serviceRadius: '',
+        businessHours: {
+            mon: { open: '09:00', close: '17:00', closed: false },
+            tue: { open: '09:00', close: '17:00', closed: false },
+            wed: { open: '09:00', close: '17:00', closed: false },
+            thu: { open: '09:00', close: '17:00', closed: false },
+            fri: { open: '09:00', close: '17:00', closed: false },
+            sat: { open: '', close: '', closed: true },
+            sun: { open: '', close: '', closed: true },
+        },
+        appointmentOnly: false,
+        emergencyServices: false,
+        // Step 4
+        hasGoogleProfile: '',
+        websiteUrl: '',
+        socialMedia: [],
+        currentAdvertising: [],
+        // Step 5
+        primaryGoal: '',
+        marketingBudget: '',
+        targetAge: '',
+        competitors: '',
+        differentiators: '',
+        biggestChallenge: initialData?.biggestChallenge || '',
+        // Step 6
         logo: null,
-        photos: [],
+        interiorPhotos: [],
+        exteriorPhotos: [],
+        workSamples: [],
+        teamPhotos: [],
+        menuUpload: null,
         bookingLink: '',
         promotions: '',
+        // Step 7
         confirmInfo: false,
         authorize: false,
     });
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const serviceOptions = {
-        'Hair Salon': ['Women’s Cut', 'Men’s Cut', 'Color', 'Highlights', 'Blowouts', 'Treatments'],
-        'Barber Shop': ['Haircut', 'Beard Trim', 'Shave', 'Hair Designs', 'Kids Cuts'],
-        'Nail Technician': ['Mani', 'Pedi', 'Gel', 'Art', 'Acrylic'],
-        'Spa/Esthetics': ['Facials', 'Waxing', 'Massage', 'Lash Extensions', 'Brow Tinting'],
-        'Plumber': ['Emergency Calls', 'Pipe Repair', 'Drain Cleaning', 'Water Heater Installation', 'Inspections'],
-        'Electrician': ['Emergency Calls', 'Wiring', 'Panel Upgrades', 'Lighting Installation', 'Inspections'],
-        'Fitness Coach': [],
-    };
-
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
-        if (type === 'checkbox' && name === 'services') {
-            setFormData(prev => ({
-                ...prev,
-                services: checked ? [...prev.services, value] : prev.services.filter(s => s !== value)
-            }));
+        
+        if (type === 'checkbox') {
+            if (name === 'socialMedia' || name === 'currentAdvertising' || name === 'services') {
+                 setFormData(prev => ({
+                    ...prev,
+                    [name]: checked ? [...prev[name], value] : prev[name].filter(item => item !== value)
+                }));
+            } else {
+                 setFormData(prev => ({ ...prev, [name]: checked }));
+            }
         } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: type === 'checkbox' ? checked : value
-            }));
+            setFormData(prev => ({ ...prev, [name]: value }));
         }
     };
     
     const handleFileChange = (e) => {
         const { name, files } = e.target;
+        const maxFiles = {
+            logo: 1,
+            interiorPhotos: 5,
+            exteriorPhotos: 3,
+            workSamples: 8,
+            teamPhotos: 5,
+            menuUpload: 1,
+        }[name];
+
+        if (files.length > maxFiles) {
+            alert(`You can only upload a maximum of ${maxFiles} file(s).`);
+            e.target.value = ''; // Clear the input
+            return;
+        }
+
         setFormData(prev => ({ ...prev, [name]: files }));
+    };
+    
+    const setBusinessHours = (hours) => {
+        setFormData(prev => ({...prev, businessHours: hours}));
     };
 
     const nextPage = () => setPage(p => p + 1);
@@ -514,16 +719,15 @@ function OnboardingPage({ initialData, onStartOver }) {
         
         const dataToSend = new FormData();
         Object.entries(formData).forEach(([key, value]) => {
-            if (key === 'logo' && value) {
-                dataToSend.append(key, value[0]);
-            } else if (key === 'photos' && value) {
+            if (value instanceof FileList) {
                 for (let i = 0; i < value.length; i++) {
-                    dataToSend.append(`photo${i}`, value[i]);
+                    dataToSend.append(`${key}_${i}`, value[i]);
                 }
             } else if (Array.isArray(value)) {
                 dataToSend.append(key, value.join(', '));
-            }
-            else {
+            } else if (typeof value === 'object' && value !== null) {
+                dataToSend.append(key, JSON.stringify(value));
+            } else {
                 dataToSend.append(key, value);
             }
         });
@@ -532,15 +736,21 @@ function OnboardingPage({ initialData, onStartOver }) {
             await fetch('https://formspree.io/f/mnnvldep', {
                 method: 'POST',
                 body: dataToSend,
-                headers: {
-                    'Accept': 'application/json'
-                }
+                headers: { 'Accept': 'application/json' }
             });
             setIsSubmitted(true);
         } catch (error) {
             console.error('Error submitting form:', error);
             alert('There was an error submitting your form. Please try again.');
         }
+    };
+    
+    const getCurrentServices = () => {
+        const [category, type] = formData.businessType.split('.');
+        if (category && type && serviceOptions[category] && serviceOptions[category][type]) {
+            return serviceOptions[category][type];
+        }
+        return [];
     };
     
     if (isSubmitted) {
@@ -567,125 +777,154 @@ function OnboardingPage({ initialData, onStartOver }) {
     return (
         <div className="max-w-3xl mx-auto">
             <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
-                <div className="mb-6">
+                <div className="mb-8">
                     <div className="flex justify-between text-sm font-medium text-slate-400">
-                        <span>Step {page} of 5</span>
+                        <span>Step {page} of 7</span>
                         <span>Onboarding</span>
                     </div>
                     <div className="w-full bg-slate-700 rounded-full h-2.5 mt-2">
-                        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${(page / 5) * 100}%` }}></div>
+                        <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style={{ width: `${(page / 7) * 100}%` }}></div>
                     </div>
                 </div>
                 
                 <form onSubmit={handleSubmit}>
                     {page === 1 && (
                         <div className="space-y-4 animate-fade-in">
-                            <h2 className="text-2xl font-bold text-white">Business Info</h2>
-                            <div>
-                                <label htmlFor="businessName" className="block text-sm font-medium text-slate-300 mb-1">Business Name</label>
-                                <input type="text" name="businessName" value={formData.businessName} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required />
+                            <h2 className="text-2xl font-bold text-white mb-4">Basic Business Info</h2>
+                            <div className="grid md:grid-cols-2 gap-4">
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Business Name *</label><input type="text" name="businessName" value={formData.businessName} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="Your Company LLC" required /></div>
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Owner Name *</label><input type="text" name="ownerName" value={formData.ownerName} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="Jane Doe" required /></div>
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Email *</label><input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="you@example.com" required /></div>
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Phone *</label><input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="(555) 123-4567" required /></div>
                             </div>
-                            <div>
-                                <label htmlFor="ownerName" className="block text-sm font-medium text-slate-300 mb-1">Owner Name</label>
-                                <input type="text" name="ownerName" value={formData.ownerName} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required />
-                            </div>
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-1">Email</label>
-                                <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required />
-                            </div>
-                            <div>
-                                <label htmlFor="phone" className="block text-sm font-medium text-slate-300 mb-1">Phone</label>
-                                <input type="tel" name="phone" value={formData.phone} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required />
-                            </div>
-                             <div>
-                                <label htmlFor="businessAddress" className="block text-sm font-medium text-slate-300 mb-1">Business Address</label>
-                                <input type="text" name="businessAddress" value={`${formData.streetAddress}, ${formData.location}`} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required />
-                            </div>
+                            <div><label className="block text-sm font-medium text-slate-300 mb-1">Street Address *</label><input type="text" name="streetAddress" value={formData.streetAddress} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="123 Main St" required /></div>
+                            <div><label className="block text-sm font-medium text-slate-300 mb-1">City, State *</label><input type="text" name="location" value={formData.location} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="Anytown, USA" required /></div>
                         </div>
                     )}
 
                     {page === 2 && (
-                        <div className="space-y-4 animate-fade-in">
-                            <h2 className="text-2xl font-bold text-white">Business Type</h2>
+                        <div className="space-y-6 animate-fade-in">
+                            <h2 className="text-2xl font-bold text-white mb-4">Business Type & Services</h2>
                             <div>
-                                <label htmlFor="businessType" className="block text-sm font-medium text-slate-300 mb-1">Select your business type</label>
+                                <label htmlFor="businessType" className="block text-sm font-medium text-slate-300 mb-1">Business Type *</label>
                                 <select name="businessType" value={formData.businessType} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600">
-                                    {Object.keys(serviceOptions).map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                                    <option value="Other">Other</option>
+                                    {Object.entries(serviceOptions).map(([category, types]) => (
+                                        <optgroup label={category} key={category}>
+                                            {Object.keys(types).map(type => (
+                                                <option key={`${category}.${type}`} value={`${category}.${type}`}>{type}</option>
+                                            ))}
+                                        </optgroup>
+                                    ))}
                                 </select>
+                            </div>
+                            {getCurrentServices().length > 0 && (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-300 mb-2">Services Offered (select all that apply)</label>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-60 overflow-y-auto p-2 border border-slate-700 rounded-md">
+                                        {getCurrentServices().map(service => (
+                                            <div key={service} className="flex items-center">
+                                                <input type="checkbox" id={service} name="services" value={service} checked={formData.services.includes(service)} onChange={handleChange} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-blue-600" />
+                                                <label htmlFor={service} className="ml-2 text-slate-300 text-sm">{service}</label>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                             <div>
+                                <label htmlFor="customServices" className="block text-sm font-medium text-slate-300 mb-1">Custom Services</label>
+                                <textarea name="customServices" value={formData.customServices} onChange={handleChange} rows="3" className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="List any services not mentioned above, separated by commas."></textarea>
                             </div>
                         </div>
                     )}
 
                     {page === 3 && (
-                        <div className="space-y-4 animate-fade-in">
-                            <h2 className="text-2xl font-bold text-white">Services Offered</h2>
-                            {(serviceOptions[formData.businessType] && serviceOptions[formData.businessType].length > 0) ? (
-                                <div className="grid grid-cols-2 gap-4">
-                                    {serviceOptions[formData.businessType].map(service => (
-                                        <div key={service} className="flex items-center">
-                                            <input type="checkbox" id={service} name="services" value={service} checked={formData.services.includes(service)} onChange={handleChange} className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-blue-600" />
-                                            <label htmlFor={service} className="ml-2 text-slate-300">{service}</label>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div>
-                                    <label htmlFor="otherServices" className="block text-sm font-medium text-slate-300 mb-1">Please describe your services</label>
-                                    <textarea name="otherServices" value={formData.otherServices} onChange={handleChange} rows="4" className="w-full p-2 rounded-md bg-slate-800 border border-slate-600"></textarea>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {page === 4 && (
-                        <div className="space-y-4 animate-fade-in">
-                            <h2 className="text-2xl font-bold text-white">Branding & Media</h2>
-                            <div>
-                                <label htmlFor="logo" className="block text-sm font-medium text-slate-300 mb-1">Upload Logo</label>
-                                <input type="file" name="logo" onChange={handleFileChange} className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                            </div>
-                             <div>
-                                <label htmlFor="photos" className="block text-sm font-medium text-slate-300 mb-1">Upload up to 4 photos</label>
-                                <input type="file" name="photos" onChange={handleFileChange} multiple accept="image/*" className="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" />
-                            </div>
-                            <div>
-                                <label htmlFor="bookingLink" className="block text-sm font-medium text-slate-300 mb-1">Booking Link (URL)</label>
-                                <input type="url" name="bookingLink" value={formData.bookingLink} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" />
-                            </div>
-                             <div>
-                                <label htmlFor="promotions" className="block text-sm font-medium text-slate-300 mb-1">Special offers / promotions</label>
-                                <textarea name="promotions" value={formData.promotions} onChange={handleChange} rows="3" className="w-full p-2 rounded-md bg-slate-800 border border-slate-600"></textarea>
-                            </div>
-                        </div>
-                    )}
-
-                    {page === 5 && (
                         <div className="space-y-6 animate-fade-in">
-                            <h2 className="text-2xl font-bold text-white">Confirmation</h2>
-                            <div className="text-slate-300 text-sm space-y-2 bg-slate-900/50 p-4 rounded-md">
-                                <p><strong>Business Name:</strong> {formData.businessName}</p>
-                                <p><strong>Owner Name:</strong> {formData.ownerName}</p>
-                                <p><strong>Email:</strong> {formData.email}</p>
-                                <p><strong>Phone:</strong> {formData.phone}</p>
-                                <p><strong>Address:</strong> {`${formData.streetAddress}, ${formData.location}`}</p>
-                                <p><strong>Services:</strong> {formData.businessType === 'Other' ? formData.otherServices : formData.services.join(', ')}</p>
+                            <h2 className="text-2xl font-bold text-white mb-4">Business Operations</h2>
+                            <div className="grid md:grid-cols-3 gap-4">
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Years in Business *</label><select name="yearsInBusiness" value={formData.yearsInBusiness} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>Under 1 year</option><option>1-2 years</option><option>3-5 years</option><option>6-10 years</option><option>10+ years</option></select></div>
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Number of Employees *</label><select name="numEmployees" value={formData.numEmployees} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>Just me</option><option>2-5</option><option>6-10</option><option>11-20</option><option>21+</option></select></div>
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Service Area Radius *</label><select name="serviceRadius" value={formData.serviceRadius} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>Within 5 miles</option><option>10 miles</option><option>25 miles</option><option>50 miles</option><option>Statewide</option></select></div>
                             </div>
-                            <div className="flex items-start">
-                                <input type="checkbox" id="confirmInfo" name="confirmInfo" checked={formData.confirmInfo} onChange={handleChange} className="h-4 w-4 mt-1 rounded border-slate-500 bg-slate-700 text-blue-600" required />
-                                <label htmlFor="confirmInfo" className="ml-2 text-slate-300">I confirm the above information is correct.</label>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Business Hours *</label>
+                                <BusinessHours hours={formData.businessHours} setHours={setBusinessHours} />
                             </div>
-                             <div className="flex items-start">
-                                <input type="checkbox" id="authorize" name="authorize" checked={formData.authorize} onChange={handleChange} className="h-4 w-4 mt-1 rounded border-slate-500 bg-slate-700 text-blue-600" required />
-                                <label htmlFor="authorize" className="ml-2 text-slate-300">I authorize SEO Sentinel to request management access to my Google Business Profile.</label>
+                            <div className="flex items-center gap-8">
+                                <div className="flex items-center gap-2"><input type="checkbox" name="appointmentOnly" checked={formData.appointmentOnly} onChange={handleChange} className="h-4 w-4 rounded" /><label className="text-sm">Appointment Only?</label></div>
+                                <div className="flex items-center gap-2"><input type="checkbox" name="emergencyServices" checked={formData.emergencyServices} onChange={handleChange} className="h-4 w-4 rounded" /><label className="text-sm">Emergency Services?</label></div>
                             </div>
+                        </div>
+                    )}
+                    
+                    {page === 4 && (
+                        <div className="space-y-6 animate-fade-in">
+                             <h2 className="text-2xl font-bold text-white mb-4">Current Online Presence</h2>
+                             <div><label className="block text-sm font-medium text-slate-300 mb-1">Do you have a Google Business Profile? *</label><select name="hasGoogleProfile" value={formData.hasGoogleProfile} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>Yes</option><option>No</option><option>Not Sure</option></select></div>
+                             <div><label className="block text-sm font-medium text-slate-300 mb-1">Website URL (optional)</label><input type="url" name="websiteUrl" value={formData.websiteUrl} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="https://yourwebsite.com" /></div>
+                             <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Social Media Accounts</label>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                    {['Facebook', 'Instagram', 'Twitter', 'LinkedIn', 'TikTok', 'YouTube'].map(social => <div key={social}><input type="checkbox" name="socialMedia" value={social} onChange={handleChange} /> <label className="ml-2">{social}</label></div>)}
+                                </div>
+                             </div>
+                             <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-2">Current Advertising</label>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                    {['Google Ads', 'Facebook Ads', 'Yellow Pages', 'Local newspapers', 'None'].map(ad => <div key={ad}><input type="checkbox" name="currentAdvertising" value={ad} onChange={handleChange} /> <label className="ml-2">{ad}</label></div>)}
+                                </div>
+                             </div>
+                        </div>
+                    )}
+                    
+                    {page === 5 && (
+                         <div className="space-y-6 animate-fade-in">
+                             <h2 className="text-2xl font-bold text-white mb-4">Goals & Competition</h2>
+                             <div className="grid md:grid-cols-2 gap-4">
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Primary Business Goal *</label><select name="primaryGoal" value={formData.primaryGoal} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>More customers</option><option>Higher prices</option><option>Better reviews</option><option>Brand awareness</option><option>Expand location</option></select></div>
+                                <div><label className="block text-sm font-medium text-slate-300 mb-1">Monthly Marketing Budget *</label><select name="marketingBudget" value={formData.marketingBudget} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>Under $100</option><option>$100-$300</option><option>$300-$500</option><option>$500-$1000</option><option>$1000+</option></select></div>
+                             </div>
+                             <div><label className="block text-sm font-medium text-slate-300 mb-1">Target Customer Age *</label><select name="targetAge" value={formData.targetAge} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>18-25</option><option>26-35</option><option>36-45</option><option>46-55</option><option>55+</option><option>All ages</option></select></div>
+                             <div><label className="block text-sm font-medium text-slate-300 mb-1">Main Competitors</label><input type="text" name="competitors" value={formData.competitors} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="e.g., Competitor A, Competitor B" /></div>
+                             <div><label className="block text-sm font-medium text-slate-300 mb-1">What makes you different?</label><textarea name="differentiators" value={formData.differentiators} onChange={handleChange} rows="3" className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" maxLength="300"></textarea></div>
+                             <div><label className="block text-sm font-medium text-slate-300 mb-1">Biggest Marketing Challenge *</label><select name="biggestChallenge" value={formData.biggestChallenge} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" required><option value="">Select...</option><option>Getting more leads</option><option>Getting reviews</option><option>Beating competitors</option><option>Not enough time</option><option>Managing reviews</option><option>Competing on price</option><option>Standing out</option></select></div>
+                         </div>
+                    )}
+                    
+                    {page === 6 && (
+                        <div className="space-y-6 animate-fade-in">
+                            <h2 className="text-2xl font-bold text-white mb-4">Media & Branding</h2>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <FileInput label="Business Logo" name="logo" maxFiles={1} fileList={formData.logo} onChange={handleFileChange} helpText="PNG, JPG, GIF up to 5MB" />
+                                <FileInput label="Menu/Price List" name="menuUpload" maxFiles={1} fileList={formData.menuUpload} onChange={handleFileChange} helpText="PDF or Image file" />
+                                <FileInput label="Interior Photos" name="interiorPhotos" multiple maxFiles={5} fileList={formData.interiorPhotos} onChange={handleFileChange} helpText="Up to 5 images" />
+                                <FileInput label="Exterior/Storefront Photos" name="exteriorPhotos" multiple maxFiles={3} fileList={formData.exteriorPhotos} onChange={handleFileChange} helpText="Up to 3 images" />
+                                <FileInput label="Work Samples/Portfolio" name="workSamples" multiple maxFiles={8} fileList={formData.workSamples} onChange={handleFileChange} helpText="Up to 8 images" />
+                                <FileInput label="Team Photos" name="teamPhotos" multiple maxFiles={5} fileList={formData.teamPhotos} onChange={handleFileChange} helpText="Up to 5 images" />
+                            </div>
+                            <div><label className="block text-sm font-medium text-slate-300 mb-1">Booking Link URL</label><input type="url" name="bookingLink" value={formData.bookingLink} onChange={handleChange} className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="https://yourbookingsite.com" /></div>
+                            <div><label className="block text-sm font-medium text-slate-300 mb-1">Special Promotions</label><textarea name="promotions" value={formData.promotions} onChange={handleChange} rows="3" className="w-full p-2 rounded-md bg-slate-800 border border-slate-600" placeholder="e.g., 10% off for new clients"></textarea></div>
+                        </div>
+                    )}
+
+                    {page === 7 && (
+                        <div className="space-y-6 animate-fade-in">
+                            <h2 className="text-2xl font-bold text-white">Review & Authorization</h2>
+                            <div className="text-slate-300 text-sm space-y-4 bg-slate-900/50 p-4 rounded-md">
+                                <div><h3 className="font-bold text-blue-400">Business Information</h3><p>{formData.businessName}, {formData.ownerName}, {formData.email}, {formData.phone}, {formData.streetAddress}, {formData.location}</p></div>
+                                <div><h3 className="font-bold text-blue-400">Services & Operations</h3><p>Type: {formData.businessType.split('.')[1]}. Services: {formData.services.join(', ') || 'N/A'}. Custom: {formData.customServices || 'N/A'}</p></div>
+                                <div><h3 className="font-bold text-blue-400">Online Presence</h3><p>Website: {formData.websiteUrl || 'N/A'}. Social: {formData.socialMedia.join(', ') || 'N/A'}</p></div>
+                                <div><h3 className="font-bold text-blue-400">Goals & Marketing</h3><p>Goal: {formData.primaryGoal}. Budget: {formData.marketingBudget}. Challenge: {formData.biggestChallenge}</p></div>
+                                <div><h3 className="font-bold text-blue-400">Media Assets</h3><p>Logo: {formData.logo ? 'Uploaded' : 'No'}. Photos: {formData.interiorPhotos.length + formData.exteriorPhotos.length + formData.workSamples.length + formData.teamPhotos.length} files. Menu: {formData.menuUpload ? 'Uploaded' : 'No'}</p></div>
+                            </div>
+                            <div className="flex items-start"><input type="checkbox" id="confirmInfo" name="confirmInfo" checked={formData.confirmInfo} onChange={handleChange} className="h-4 w-4 mt-1" required /><label htmlFor="confirmInfo" className="ml-2">I confirm the above information is correct.</label></div>
+                            <div className="flex items-start"><input type="checkbox" id="authorize" name="authorize" checked={formData.authorize} onChange={handleChange} className="h-4 w-4 mt-1" required /><label htmlFor="authorize" className="ml-2">I authorize SEO Sentinel to request management access to my Google Business Profile.</label></div>
                         </div>
                     )}
 
                     <div className="flex justify-between mt-8">
                         {page > 1 && <button type="button" onClick={prevPage} className="bg-slate-600 hover:bg-slate-700 text-white font-semibold py-2 px-4 rounded-lg">Back</button>}
-                        {page < 5 && <button type="button" onClick={nextPage} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg ml-auto">Next</button>}
-                        {page === 5 && <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg ml-auto">Submit</button>}
+                        {page < 7 && <button type="button" onClick={nextPage} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg ml-auto">Next</button>}
+                        {page === 7 && <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg ml-auto">Submit & Authorize</button>}
                     </div>
                 </form>
             </div>
