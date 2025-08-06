@@ -1,415 +1,381 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SEO Sentinel AI Preview</title>
-    <!-- Tailwind CSS for styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React Libraries -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <!-- Babel for JSX transpilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-</head>
-<body class="bg-slate-900">
-    <div id="root"></div>
+import React from 'react';
+// Explicitly destructuring hooks from the React object to address potential build issues.
+const { useState, useEffect } = React;
 
-    <script type="text/babel">
-        // --- React App Code ---
+// --- HELPER ICONS ---
+// A collection of SVG icons used throughout the application for a consistent look and feel.
 
-        // Explicitly destructuring hooks from the React object to address potential build issues.
-        const { useState, useEffect } = React;
+const CheckCircleIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <title>Check Circle Icon</title>
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
 
-        // --- HELPER ICONS ---
-        // A collection of SVG icons used throughout the application for a consistent look and feel.
+const MenuIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <title>Menu Icon</title>
+    <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
+  </svg>
+);
 
-        const CheckCircleIcon = ({ className }) => (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <title>Check Circle Icon</title>
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
-          </svg>
-        );
+const XIcon = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <title>Close Icon</title>
+    <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+  </svg>
+);
 
-        const MenuIcon = ({ className }) => (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <title>Menu Icon</title>
-            <line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        );
+const BotIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <title>Bot Icon</title>
+      <path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
+    </svg>
+);
 
-        const XIcon = ({ className }) => (
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            <title>Close Icon</title>
-            <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        );
+const TargetIcon = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <title>Target Icon</title>
+      <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+    </svg>
+);
 
-        const BotIcon = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-              <title>Bot Icon</title>
-              <path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>
+// --- STATIC DATA (Moved outside components to prevent re-creation on render) ---
+const loadingSteps = [
+    "Scanning Google for your Business Profile...",
+    "Analyzing Name, Address, Phone (NAP) consistency...",
+    "Auditing online reviews & competitor ratings...",
+    "Checking local keyword rankings in your area...",
+    "Assessing website authority & mobile experience...",
+    "Compiling your personalized growth plan..."
+];
+
+const headerNavLinks = [
+    { name: 'Features', id: 'features' },
+    { name: 'Pricing', id: 'pricing' },
+    { name: 'Blog', id: 'blog' },
+    { name: 'FAQ', id: 'faq' },
+];
+
+const features = [
+    { icon: <BotIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "AI-Powered Automation", description: "Our AI monitors your local SEO 24/7, automatically making improvements and alerting you to issues before they hurt your rankings." },
+    { icon: <TargetIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "Local-First Focus", description: "Built specifically for local businesses. We optimize for 'near me' searches and local map rankings, not generic SEO metrics." }
+];
+
+const blogPosts = [
+    { title: "Why Your Salon Suite Needs Its Own Google Business Profile", description: "You've invested in your own salon suite... But do you have your own Google Business Profile? If not, you're missing out on the biggest opportunity to attract new clients.", link: "#" },
+    { title: "5 Google My Business Mistakes Costing Salon Suite Owners Clients", description: "After analyzing hundreds of salon suite owners' profiles, we've identified five critical mistakes that are costing stylists thousands of dollars in lost revenue.", link: "#" },
+    { title: "How Salon Suite Owners Can Outrank Traditional Salons on Google", description: "Think you can't compete with established salons that have been around for decades? Think again. Salon suite owners actually have several advantages in local search.", link: "#" }
+];
+
+const faqs = [
+    { q: "Why can't customers find me if I'm in a shared salon space?", a: "When you're in a shared salon space, your business address is often the same as other professionals in the building. Without proper optimization, Google may not display your listing for searches, and customers could end up calling or visiting another business instead. Our service ensures your Google Business Profile is set up to stand out, even in shared or suite-style spaces, so people can find you directly." },
+    { q: "Can I get reviews for my business if I share the same address as other salon pros?", a: "Yes! Google allows multiple businesses at the same address, as long as each has its own unique name, phone number, and category. We help you set up your profile correctly so reviews go to your listing, not your neighbor's." },
+    { q: "Will this help me show up for searches outside my immediate city?", a: "Yes. While Google prioritizes nearby results, our optimization strategies help expand your visibility to surrounding towns and neighborhoods where your ideal clients may live. This means you can get booked by people who are willing to travel for your services." },
+];
+
+const onboardingDeliverables = [
+    { icon: "🗺️", action: "Fix Your Foundation (NAP & Citations)", description: "We'll correct all inconsistent business info across the web and build new citations, a critical step for ranking on Google Maps." },
+    { icon: "✍️", action: "Content That Ranks (GMB Posts)", description: "You get 4 professionally written, keyword-optimized Google Business Posts scheduled for you. You don't have to write a thing." },
+    { icon: "⭐", action: "Automate Your Reputation (Reviews)", description: "We'll set up a simple system for you to consistently get new reviews, a huge factor in customer trust and local ranking." },
+    { icon: "📊", action: "Outsmart Your Competition (Reporting)", description: "Receive a simple, jargon-free report showing your progress, keyword rankings, and how you stack up against the competition." },
+];
+
+
+// --- LOADING SPINNER COMPONENT ---
+const LoadingState = () => {
+    const [currentStep, setCurrentStep] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentStep(prevStep => {
+                if (prevStep < loadingSteps.length - 1) {
+                    return prevStep + 1;
+                }
+                clearInterval(interval);
+                return prevStep;
+            });
+        }, 1500);
+
+        return () => clearInterval(interval);
+    }, []); // Empty dependency array ensures this effect runs only once.
+
+    return (
+        <div className="flex flex-col items-center justify-center space-y-4 min-h-[60vh] bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
+            <svg className="animate-spin h-12 w-12 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <title>Loading Spinner</title>
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-        );
+            <h3 className="text-2xl font-bold text-white">Building Your Local Dominance Report...</h3>
+            <p className="text-slate-400">This may take up to 30 seconds as we analyze real-time local data.</p>
+            <div className="mt-4 w-full max-w-md text-left">
+                {loadingSteps.map((step, index) => (
+                    <div key={index} className={`flex items-center gap-3 p-2 transition-all duration-500 ${currentStep >= index ? 'opacity-100' : 'opacity-40'}`}>
+                        {currentStep > index ? (
+                            <CheckCircleIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
+                        ) : currentStep === index ? (
+                            <div className="w-5 h-5 flex-shrink-0"><div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse mt-1.5 ml-1.5"></div></div>
+                        ) : (
+                            <div className="w-5 h-5 flex-shrink-0"><div className="w-2 h-2 bg-slate-600 rounded-full mt-1.5 ml-1.5"></div></div>
+                        )}
+                        <span className={`${currentStep === index ? 'text-blue-400 font-semibold' : currentStep > index ? 'text-green-400' : 'text-slate-500'}`}>{step}</span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
 
-        const TargetIcon = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-              <title>Target Icon</title>
-              <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
-            </svg>
-        );
+// --- HEADER & NAVIGATION ---
+function Header() {
+    const [isOpen, setIsOpen] = useState(false);
 
-        const BarChartIcon = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-              <title>Bar Chart Icon</title>
-              <line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/>
-            </svg>
-        );
+    const scrollToSection = (id) => {
+        const section = document.getElementById(id);
+        if (section) {
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+        setIsOpen(false);
+    };
 
-        const ZapIcon = ({ className }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-              <title>Zap Icon</title>
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-        );
+    return (
+        <header className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-800">
+            <div className="container mx-auto px-4">
+                <div className="flex justify-between items-center py-4">
+                    <div className="text-2xl font-bold text-blue-400">SEO Sentinel</div>
+                    <nav className="hidden md:flex items-center gap-6">
+                        {headerNavLinks.map(link => (
+                            <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-slate-300 hover:text-blue-400 transition-colors">{link.name}</button>
+                        ))}
+                    </nav>
+                    <div className="hidden md:block">
+                        <button onClick={() => scrollToSection('gmb-check')} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                            Get Free Audit
+                        </button>
+                    </div>
+                    <div className="md:hidden">
+                        <button onClick={() => setIsOpen(!isOpen)} className="text-slate-300">
+                            {isOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
+                        </button>
+                    </div>
+                </div>
+                {isOpen && (
+                    <div className="md:hidden pb-4">
+                        <nav className="flex flex-col gap-4 items-center">
+                             {headerNavLinks.map(link => (
+                                 <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-slate-300 hover:text-blue-400 transition-colors py-2">{link.name}</button>
+                             ))}
+                            <button onClick={() => scrollToSection('gmb-check')} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors mt-2">
+                                Get Free Audit
+                            </button>
+                        </nav>
+                    </div>
+                )}
+            </div>
+        </header>
+    );
+}
 
+// --- DETAILED AUDIT REPORT COMPONENT ---
+function DetailedAuditReport({ reportData, onGetFullPlan }) {
+    if (!reportData) return <div className="text-center py-20">Analysis failed. Please start over.</div>;
 
-        // --- STATIC DATA (Moved outside components to prevent re-creation on render) ---
-        const loadingSteps = [
-            "Scanning Google for your Business Profile...",
-            "Analyzing Name, Address, Phone (NAP) consistency...",
-            "Auditing online reviews & competitor ratings...",
-            "Checking local keyword rankings in your area...",
-            "Assessing website authority & mobile experience...",
-            "Compiling your personalized growth plan..."
-        ];
+    // Handle case where business was NOT found
+    if (!reportData.business_found) {
+        const monthlyLostLeads = reportData.revenue_impact?.monthly_lost_leads;
+        const avgJobValue = reportData.revenue_impact?.avg_job_value;
+        const totalLost = monthlyLostLeads * avgJobValue;
 
-        const headerNavLinks = [
-            { name: 'Features', id: 'features' },
-            { name: 'Pricing', id: 'pricing' },
-            { name: 'Blog', id: 'blog' },
-            { name: 'FAQ', id: 'faq' },
-        ];
+        return (
+            <div className="max-w-4xl mx-auto animate-fade-in">
+                <div className="text-center mb-12">
+                    <h1 className="text-4xl md:text-5xl font-bold text-red-400">🚨 Houston, We Have a Problem</h1>
+                    <div className="bg-red-500/20 border-2 border-red-500 rounded-2xl p-8 mt-8">
+                        <h2 className="text-3xl font-bold text-white mb-4">Overall Score: {reportData.overall_score}</h2>
+                        <p className="text-xl text-red-300">{reportData.overall_explanation}</p>
+                    </div>
+                </div>
 
-        const features = [
-            { icon: <BotIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "AI-Powered Automation", description: "Our AI monitors your local SEO 24/7, automatically making improvements and alerting you to issues before they hurt your rankings." },
-            { icon: <TargetIcon className="h-12 w-12 mx-auto text-blue-400 mb-4" />, title: "Local-First Focus", description: "Built specifically for local businesses. We optimize for 'near me' searches and local map rankings, not generic SEO metrics." }
-        ];
-
-        const blogPosts = [
-            { title: "Why Your Salon Suite Needs Its Own Google Business Profile", description: "You've invested in your own salon suite... But do you have your own Google Business Profile? If not, you're missing out on the biggest opportunity to attract new clients.", link: "#" },
-            { title: "5 Google My Business Mistakes Costing Salon Suite Owners Clients", description: "After analyzing hundreds of salon suite owners' profiles, we've identified five critical mistakes that are costing stylists thousands of dollars in lost revenue.", link: "#" },
-            { title: "How Salon Suite Owners Can Outrank Traditional Salons on Google", description: "Think you can't compete with established salons that have been around for decades? Think again. Salon suite owners actually have several advantages in local search.", link: "#" }
-        ];
-
-        const faqs = [
-            { q: "Why can't customers find me if I'm in a shared salon space?", a: "When you're in a shared salon space, your business address is often the same as other professionals in the building. Without proper optimization, Google may not display your listing for searches, and customers could end up calling or visiting another business instead. Our service ensures your Google Business Profile is set up to stand out, even in shared or suite-style spaces, so people can find you directly." },
-            { q: "Can I get reviews for my business if I share the same address as other salon pros?", a: "Yes! Google allows multiple businesses at the same address, as long as each has its own unique name, phone number, and category. We help you set up your profile correctly so reviews go to your listing, not your neighbor's." },
-            { q: "Will this help me show up for searches outside my immediate city?", a: "Yes. While Google prioritizes nearby results, our optimization strategies help expand your visibility to surrounding towns and neighborhoods where your ideal clients may live. This means you can get booked by people who are willing to travel for your services." },
-        ];
-
-        const onboardingDeliverables = [
-            { icon: "🗺️", action: "Fix Your Foundation (NAP & Citations)", description: "We'll correct all inconsistent business info across the web and build new citations, a critical step for ranking on Google Maps." },
-            { icon: "✍️", action: "Content That Ranks (GMB Posts)", description: "You get 4 professionally written, keyword-optimized Google Business Posts scheduled for you. You don't have to write a thing." },
-            { icon: "⭐", action: "Automate Your Reputation (Reviews)", description: "We'll set up a simple system for you to consistently get new reviews, a huge factor in customer trust and local ranking." },
-            { icon: "📊", action: "Outsmart Your Competition (Reporting)", description: "Receive a simple, jargon-free report showing your progress, keyword rankings, and how you stack up against the competition." },
-        ];
-
-
-        // --- LOADING SPINNER COMPONENT ---
-        const LoadingState = () => {
-            const [currentStep, setCurrentStep] = useState(0);
-
-            useEffect(() => {
-                const interval = setInterval(() => {
-                    setCurrentStep(prevStep => {
-                        if (prevStep < loadingSteps.length - 1) {
-                            return prevStep + 1;
-                        }
-                        clearInterval(interval);
-                        return prevStep;
-                    });
-                }, 1500);
-
-                return () => clearInterval(interval);
-            }, []); // Empty dependency array ensures this effect runs only once.
-
-            return (
-                <div className="flex flex-col items-center justify-center space-y-4 min-h-[60vh] bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
-                    <svg className="animate-spin h-12 w-12 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <title>Loading Spinner</title>
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <h3 className="text-2xl font-bold text-white">Building Your Local Dominance Report...</h3>
-                    <p className="text-slate-400">This may take up to 30 seconds as we analyze real-time local data.</p>
-                    <div className="mt-4 w-full max-w-md text-left">
-                        {loadingSteps.map((step, index) => (
-                            <div key={index} className={`flex items-center gap-3 p-2 transition-all duration-500 ${currentStep >= index ? 'opacity-100' : 'opacity-40'}`}>
-                                {currentStep > index ? (
-                                    <CheckCircleIcon className="h-5 w-5 text-green-400 flex-shrink-0" />
-                                ) : currentStep === index ? (
-                                    <div className="w-5 h-5 flex-shrink-0"><div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse mt-1.5 ml-1.5"></div></div>
-                                ) : (
-                                    <div className="w-5 h-5 flex-shrink-0"><div className="w-2 h-2 bg-slate-600 rounded-full mt-1.5 ml-1.5"></div></div>
-                                )}
-                                <span className={`${currentStep === index ? 'text-blue-400 font-semibold' : currentStep > index ? 'text-green-400' : 'text-slate-500'}`}>{step}</span>
+                {/* Visibility Issues */}
+                <div className="bg-slate-800/50 border border-red-500/50 rounded-2xl p-8 mb-8">
+                    <h3 className="text-2xl font-bold text-red-400 mb-6">{reportData.visibility_analysis?.title}</h3>
+                    <div className="space-y-4">
+                        {Array.isArray(reportData.visibility_analysis?.issues) && reportData.visibility_analysis.issues.map((issue, idx) => (
+                            <div key={idx} className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+                                <h4 className="font-bold text-red-300 text-lg">{issue.problem}</h4>
+                                <p className="text-slate-300">{issue.impact}</p>
+                                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mt-2 ${
+                                    issue.urgency === 'CRITICAL' ? 'bg-red-600 text-white' :
+                                    issue.urgency === 'HIGH' ? 'bg-orange-600 text-white' : 'bg-yellow-600 text-black'
+                                }`}>
+                                    {issue.urgency} PRIORITY
+                                </span>
                             </div>
                         ))}
                     </div>
                 </div>
-            );
-        };
 
-        // --- HEADER & NAVIGATION ---
-        function Header() {
-            const [isOpen, setIsOpen] = useState(false);
-
-            const scrollToSection = (id) => {
-                const section = document.getElementById(id);
-                if (section) {
-                    section.scrollIntoView({ behavior: 'smooth' });
-                }
-                setIsOpen(false);
-            };
-
-            return (
-                <header className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-50 border-b border-slate-800">
-                    <div className="container mx-auto px-4">
-                        <div className="flex justify-between items-center py-4">
-                            <div className="text-2xl font-bold text-blue-400">SEO Sentinel</div>
-                            <nav className="hidden md:flex items-center gap-6">
-                                {headerNavLinks.map(link => (
-                                    <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-slate-300 hover:text-blue-400 transition-colors">{link.name}</button>
-                                ))}
-                            </nav>
-                            <div className="hidden md:block">
-                                <button onClick={() => scrollToSection('gmb-check')} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-                                    Get Free Audit
-                                </button>
+                {/* Competitor Reality Check */}
+                <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
+                    <h3 className="text-2xl font-bold text-blue-400 mb-4">{reportData.competitor_reality_check?.title}</h3>
+                    <p className="text-slate-300 mb-6">{reportData.competitor_reality_check?.summary}</p>
+                    
+                    <div className="grid md:grid-cols-3 gap-4">
+                        {Array.isArray(reportData.competitor_reality_check?.top_competitors) && reportData.competitor_reality_check.top_competitors.map((comp, idx) => (
+                            <div key={idx} className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                                <h4 className="font-bold text-green-400">{comp.name}</h4>
+                                <p className="text-sm text-slate-300">⭐ {comp.rating} ({comp.reviews} reviews)</p>
+                                <p className="text-xs text-green-300 mt-2">{comp.advantage}</p>
                             </div>
-                            <div className="md:hidden">
-                                <button onClick={() => setIsOpen(!isOpen)} className="text-slate-300">
-                                    {isOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
-                                </button>
-                            </div>
-                        </div>
-                        {isOpen && (
-                            <div className="md:hidden pb-4">
-                                <nav className="flex flex-col gap-4 items-center">
-                                     {headerNavLinks.map(link => (
-                                         <button key={link.id} onClick={() => scrollToSection(link.id)} className="text-slate-300 hover:text-blue-400 transition-colors py-2">{link.name}</button>
-                                     ))}
-                                    <button onClick={() => scrollToSection('gmb-check')} className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition-colors mt-2">
-                                        Get Free Audit
-                                    </button>
-                                </nav>
-                            </div>
-                        )}
-                    </div>
-                </header>
-            );
-        }
-
-        // --- DETAILED AUDIT REPORT COMPONENT ---
-        function DetailedAuditReport({ reportData, onGetFullPlan }) {
-            if (!reportData) return <div className="text-center py-20">Analysis failed. Please start over.</div>;
-
-            // Handle case where business was NOT found
-            if (!reportData.business_found) {
-                const monthlyLostLeads = reportData.revenue_impact?.monthly_lost_leads;
-                const avgJobValue = reportData.revenue_impact?.avg_job_value;
-                const totalLost = monthlyLostLeads * avgJobValue;
-
-                return (
-                    <div className="max-w-4xl mx-auto animate-fade-in">
-                        <div className="text-center mb-12">
-                            <h1 className="text-4xl md:text-5xl font-bold text-red-400">🚨 Houston, We Have a Problem</h1>
-                            <div className="bg-red-500/20 border-2 border-red-500 rounded-2xl p-8 mt-8">
-                                <h2 className="text-3xl font-bold text-white mb-4">Overall Score: {reportData.overall_score}</h2>
-                                <p className="text-xl text-red-300">{reportData.overall_explanation}</p>
-                            </div>
-                        </div>
-
-                        {/* Visibility Issues */}
-                        <div className="bg-slate-800/50 border border-red-500/50 rounded-2xl p-8 mb-8">
-                            <h3 className="text-2xl font-bold text-red-400 mb-6">{reportData.visibility_analysis?.title}</h3>
-                            <div className="space-y-4">
-                                {Array.isArray(reportData.visibility_analysis?.issues) && reportData.visibility_analysis.issues.map((issue, idx) => (
-                                    <div key={idx} className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-                                        <h4 className="font-bold text-red-300 text-lg">{issue.problem}</h4>
-                                        <p className="text-slate-300">{issue.impact}</p>
-                                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mt-2 ${
-                                            issue.urgency === 'CRITICAL' ? 'bg-red-600 text-white' :
-                                            issue.urgency === 'HIGH' ? 'bg-orange-600 text-white' : 'bg-yellow-600 text-black'
-                                        }`}>
-                                            {issue.urgency} PRIORITY
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Competitor Reality Check */}
-                        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
-                            <h3 className="text-2xl font-bold text-blue-400 mb-4">{reportData.competitor_reality_check?.title}</h3>
-                            <p className="text-slate-300 mb-6">{reportData.competitor_reality_check?.summary}</p>
-                            
-                            <div className="grid md:grid-cols-3 gap-4">
-                                {Array.isArray(reportData.competitor_reality_check?.top_competitors) && reportData.competitor_reality_check.top_competitors.map((comp, idx) => (
-                                    <div key={idx} className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                                        <h4 className="font-bold text-green-400">{comp.name}</h4>
-                                        <p className="text-sm text-slate-300">⭐ {comp.rating} ({comp.reviews} reviews)</p>
-                                        <p className="text-xs text-green-300 mt-2">{comp.advantage}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Revenue Impact */}
-                        <div className="bg-gradient-to-br from-red-900/50 to-orange-900/50 border-2 border-orange-500 rounded-2xl p-8 mb-8">
-                            <h3 className="text-2xl font-bold text-orange-400 mb-4">{reportData.revenue_impact?.title}</h3>
-                            <div className="text-center">
-                                <p className="text-4xl font-bold text-red-400 mb-2">
-                                    ${totalLost.toLocaleString()}/month
-                                </p>
-                                <p className="text-slate-300">
-                                    ≈ {monthlyLostLeads} lost leads × ${avgJobValue} average job
-                                </p>
-                                <p className="text-orange-300 mt-4 font-semibold">
-                                    That's ${(totalLost * 12).toLocaleString()} per year you're losing to competitors!
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Action Plan */}
-                        <div className="bg-slate-800/50 border border-green-500/50 rounded-2xl p-8 mb-8">
-                            <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.immediate_action_plan?.title}</h3>
-                            <div className="space-y-4">
-                                {Array.isArray(reportData.immediate_action_plan?.priority_actions) && reportData.immediate_action_plan.priority_actions.map((action, idx) => (
-                                    <div key={idx} className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                                        <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                                            {idx + 1}
-                                        </div>
-                                        <div className="flex-grow">
-                                            <h4 className="font-bold text-green-400">{action.action}</h4>
-                                            <p className="text-slate-300 text-sm">{action.impact}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                                                {action.timeframe}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* CTA */}
-                        <div className="bg-gradient-to-br from-green-800 to-green-900 border-2 border-green-500 rounded-2xl p-8 text-center">
-                            <h3 className="text-3xl font-bold text-white mb-4">Ready to Stop Losing Customers?</h3>
-                            <p className="text-green-300 mb-6">We'll set up your Google Business Profile and get you visible in 48 hours.</p>
-                            <button onClick={onGetFullPlan} className="bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1">
-                                🚀 Get Me Visible - $30/mo
-                            </button>
-                            <p className="text-xs text-green-200 mt-4">30-day money-back guarantee</p>
-                        </div>
-                    </div>
-                );
-            }
-
-            // Handle case where business WAS found but has issues
-            const score = String(reportData.overall_score || '');
-            const advantageAreas = reportData.competitor_comparison?.competitor_averages?.advantage_areas;
-            
-            return (
-                <div className="max-w-4xl mx-auto animate-fade-in">
-                    <div className="text-center mb-12">
-                        <h1 className="text-4xl md:text-5xl font-bold text-white">Your Business Visibility Report</h1>
-                        <div className={`inline-block px-6 py-3 rounded-2xl border-2 mt-4 ${
-                            score.startsWith('A') ? 'bg-green-500/20 border-green-500 text-green-400' :
-                            score.startsWith('B') ? 'bg-blue-500/20 border-blue-500 text-blue-400' :
-                            score.startsWith('C') ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400' :
-                            'bg-red-500/20 border-red-500 text-red-400'
-                        }`}>
-                            <span className="text-3xl font-bold">Grade: {reportData.overall_score}</span>
-                        </div>
-                        <p className="text-xl text-slate-300 mt-4">{reportData.overall_explanation}</p>
-                    </div>
-
-                    {/* Profile Analysis */}
-                    <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
-                        <h3 className="text-2xl font-bold text-blue-400 mb-6">{reportData.profile_analysis?.title}</h3>
-                        <div className="space-y-4">
-                            {Array.isArray(reportData.profile_analysis?.issues) && reportData.profile_analysis.issues.map((issue, idx) => (
-                                <div key={idx} className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
-                                    <h4 className="font-bold text-orange-400">{issue.problem}</h4>
-                                    <p className="text-slate-300">{issue.impact}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Competitor Comparison - only show if we have competitor data */}
-                    {reportData.competitor_comparison && (
-                        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
-                            <h3 className="text-2xl font-bold text-blue-400 mb-6">{reportData.competitor_comparison.title}</h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                                    <h4 className="font-bold text-blue-400 mb-3">Your Current Stats</h4>
-                                    <ul className="text-slate-300 space-y-1">
-                                        <li>⭐ Rating: {reportData.competitor_comparison.your_stats?.rating}/5</li>
-                                        <li>📝 Reviews: {reportData.competitor_comparison.your_stats?.reviews}</li>
-                                        <li>📸 Photos: {reportData.competitor_comparison.your_stats?.photos}</li>
-                                    </ul>
-                                </div>
-                                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                                    <h4 className="font-bold text-green-400 mb-3">Competitor Averages</h4>
-                                    <ul className="text-slate-300 space-y-1">
-                                        <li>⭐ Rating: {reportData.competitor_comparison.competitor_averages?.rating}/5</li>
-                                        <li>📝 Reviews: {reportData.competitor_comparison.competitor_averages?.reviews}</li>
-                                        <li>🏆 They have: {Array.isArray(advantageAreas) ? advantageAreas.join(', ') : ''}</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Optimization Plan */}
-                    <div className="bg-slate-800/50 border border-green-500/50 rounded-2xl p-8 mb-8">
-                        <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.optimization_plan?.title}</h3>
-                        <div className="space-y-4">
-                            {Array.isArray(reportData.optimization_plan?.priority_fixes) && reportData.optimization_plan.priority_fixes.map((fix, idx) => (
-                                <div key={idx} className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
-                                    <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-                                        {idx + 1}
-                                    </div>
-                                    <div className="flex-grow">
-                                        <h4 className="font-bold text-green-400">{fix.fix}</h4>
-                                        <p className="text-slate-300 text-sm">{fix.why}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                                            {fix.timeline}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* CTA */}
-                    <div className="bg-gradient-to-br from-green-800 to-green-900 border-2 border-green-500 rounded-2xl p-8 text-center">
-                        <h3 className="text-3xl font-bold text-white mb-4">Ready to Fix These Issues?</h3>
-                        <p className="text-green-300 mb-6">We'll optimize everything for you, so you can focus on your business.</p>
-                        <button onClick={onGetFullPlan} className="bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1">
-                            🔧 Fix My Visibility - $30/mo
-                        </button>
-                        <p className="text-xs text-green-200 mt-4">30-day money-back guarantee</p>
+                        ))}
                     </div>
                 </div>
-            );
-        }
+
+                {/* Revenue Impact */}
+                <div className="bg-gradient-to-br from-red-900/50 to-orange-900/50 border-2 border-orange-500 rounded-2xl p-8 mb-8">
+                    <h3 className="text-2xl font-bold text-orange-400 mb-4">{reportData.revenue_impact?.title}</h3>
+                    <div className="text-center">
+                        <p className="text-4xl font-bold text-red-400 mb-2">
+                            ${totalLost ? totalLost.toLocaleString() : '...'} /month
+                        </p>
+                        <p className="text-slate-300">
+                            ≈ {monthlyLostLeads || '...'} lost leads × ${avgJobValue || '...'} average job
+                        </p>
+                        <p className="text-orange-300 mt-4 font-semibold">
+                            That's ${totalLost ? (totalLost * 12).toLocaleString() : '...'} per year you're losing to competitors!
+                        </p>
+                    </div>
+                </div>
+
+                {/* Action Plan */}
+                <div className="bg-slate-800/50 border border-green-500/50 rounded-2xl p-8 mb-8">
+                    <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.immediate_action_plan?.title}</h3>
+                    <div className="space-y-4">
+                        {Array.isArray(reportData.immediate_action_plan?.priority_actions) && reportData.immediate_action_plan.priority_actions.map((action, idx) => (
+                            <div key={idx} className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                                <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                                    {idx + 1}
+                                </div>
+                                <div className="flex-grow">
+                                    <h4 className="font-bold text-green-400">{action.action}</h4>
+                                    <p className="text-slate-300 text-sm">{action.impact}</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                        {action.timeframe}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* CTA */}
+                <div className="bg-gradient-to-br from-green-800 to-green-900 border-2 border-green-500 rounded-2xl p-8 text-center">
+                    <h3 className="text-3xl font-bold text-white mb-4">Ready to Stop Losing Customers?</h3>
+                    <p className="text-green-300 mb-6">We'll set up your Google Business Profile and get you visible in 48 hours.</p>
+                    <button onClick={onGetFullPlan} className="bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1">
+                        🚀 Get Me Visible - $30/mo
+                    </button>
+                    <p className="text-xs text-green-200 mt-4">30-day money-back guarantee</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Handle case where business WAS found but has issues
+    const score = String(reportData.overall_score || '');
+    const advantageAreas = reportData.competitor_comparison?.competitor_averages?.advantage_areas;
+    
+    return (
+        <div className="max-w-4xl mx-auto animate-fade-in">
+            <div className="text-center mb-12">
+                <h1 className="text-4xl md:text-5xl font-bold text-white">Your Business Visibility Report</h1>
+                <div className={`inline-block px-6 py-3 rounded-2xl border-2 mt-4 ${
+                    score.startsWith('A') ? 'bg-green-500/20 border-green-500 text-green-400' :
+                    score.startsWith('B') ? 'bg-blue-500/20 border-blue-500 text-blue-400' :
+                    score.startsWith('C') ? 'bg-yellow-500/20 border-yellow-500 text-yellow-400' :
+                    'bg-red-500/20 border-red-500 text-red-400'
+                }`}>
+                    <span className="text-3xl font-bold">Grade: {reportData.overall_score}</span>
+                </div>
+                <p className="text-xl text-slate-300 mt-4">{reportData.overall_explanation}</p>
+            </div>
+
+            {/* Profile Analysis */}
+            <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
+                <h3 className="text-2xl font-bold text-blue-400 mb-6">{reportData.profile_analysis?.title}</h3>
+                <div className="space-y-4">
+                    {Array.isArray(reportData.profile_analysis?.issues) && reportData.profile_analysis.issues.map((issue, idx) => (
+                        <div key={idx} className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+                            <h4 className="font-bold text-orange-400">{issue.problem}</h4>
+                            <p className="text-slate-300">{issue.impact}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Competitor Comparison - only show if we have competitor data */}
+            {reportData.competitor_comparison && (
+                <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8 mb-8">
+                    <h3 className="text-2xl font-bold text-blue-400 mb-6">{reportData.competitor_comparison.title}</h3>
+                    <div className="grid md:grid-cols-2 gap-6">
+                        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
+                            <h4 className="font-bold text-blue-400 mb-3">Your Current Stats</h4>
+                            <ul className="text-slate-300 space-y-1">
+                                <li>⭐ Rating: {reportData.competitor_comparison.your_stats?.rating}/5</li>
+                                <li>📝 Reviews: {reportData.competitor_comparison.your_stats?.reviews}</li>
+                                <li>📸 Photos: {reportData.competitor_comparison.your_stats?.photos}</li>
+                            </ul>
+                        </div>
+                        <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                            <h4 className="font-bold text-green-400 mb-3">Competitor Averages</h4>
+                            <ul className="text-slate-300 space-y-1">
+                                <li>⭐ Rating: {reportData.competitor_comparison.competitor_averages?.rating}/5</li>
+                                <li>📝 Reviews: {reportData.competitor_comparison.competitor_averages?.reviews}</li>
+                                <li>🏆 They have: {Array.isArray(advantageAreas) ? advantageAreas.join(', ') : ''}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Optimization Plan */}
+            <div className="bg-slate-800/50 border border-green-500/50 rounded-2xl p-8 mb-8">
+                <h3 className="text-2xl font-bold text-green-400 mb-6">{reportData.optimization_plan?.title}</h3>
+                <div className="space-y-4">
+                    {Array.isArray(reportData.optimization_plan?.priority_fixes) && reportData.optimization_plan.priority_fixes.map((fix, idx) => (
+                        <div key={idx} className="flex items-center gap-4 bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+                            <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+                                {idx + 1}
+                            </div>
+                            <div className="flex-grow">
+                                <h4 className="font-bold text-green-400">{fix.fix}</h4>
+                                <p className="text-slate-300 text-sm">{fix.why}</p>
+                            </div>
+                            <div className="text-right">
+                                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                    {fix.timeline}
+                                </span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* CTA */}
+            <div className="bg-gradient-to-br from-green-800 to-green-900 border-2 border-green-500 rounded-2xl p-8 text-center">
+                <h3 className="text-3xl font-bold text-white mb-4">Ready to Fix These Issues?</h3>
+                <p className="text-green-300 mb-6">We'll optimize everything for you, so you can focus on your business.</p>
+                <button onClick={onGetFullPlan} className="bg-gradient-to-br from-green-400 to-green-600 text-white font-bold py-4 px-10 rounded-lg text-xl transition-transform duration-300 transform hover:-translate-y-1">
+                    🔧 Fix My Visibility - $30/mo
+                </button>
+                <p className="text-xs text-green-200 mt-4">30-day money-back guarantee</p>
+            </div>
+        </div>
+    );
+}
 
 
         // --- FORM COMPONENT ---
