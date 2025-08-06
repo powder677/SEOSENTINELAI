@@ -474,16 +474,17 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
             const addonPrice = 10;
 
             // Production Stripe checkout links
-            const baseCheckoutUrl = "https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i";
-            const addonCheckoutUrl = "https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h";
+            // const baseCheckoutUrl = "https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i";
+            // const addonCheckoutUrl = "https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h";
 
-            const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
+            // const checkoutUrl = includeAddon ? addonCheckoutUrl : baseCheckoutUrl;
 
             const handleInputChange = (e) => {
                 const { name, value } = e.target;
                 setOnboardingData(prev => ({...prev, [name]: value}));
             };
 
+            /*
             const handleCheckout = async (e) => {
                 e.preventDefault();
                 
@@ -511,6 +512,7 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                 // Redirect to Stripe checkout
                 window.location.href = checkoutUrl;
             };
+            */
 
             return (
                 <div className="max-w-4xl mx-auto animate-fade-in">
@@ -536,6 +538,7 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                     
                     <div className="bg-slate-800 p-8 rounded-2xl border-2 border-green-500 shadow-2xl shadow-green-500/20">
                          <h2 className="text-2xl font-bold text-center text-white mb-6">🛠️ Activate Your Plan</h2>
+                         {/*
                          <form onSubmit={handleCheckout} className="max-w-lg mx-auto space-y-6">
                               <div>
                                    <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Your Name</label>
@@ -562,6 +565,7 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
                                    </button>
                               </div>
                          </form>
+                         */}
                          <div className="text-center mt-6">
                               <p className="text-xs text-slate-500">You'll be taken to a secure checkout. After payment, we'll send a quick onboarding form to link your GMB. Your first optimizations will begin within 48 hours.</p>
                          </div>
@@ -811,4 +815,3 @@ function DetailedAuditReport({ reportData, onGetFullPlan }) {
             );
         }
 export default App;
-l>
