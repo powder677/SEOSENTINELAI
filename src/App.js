@@ -719,6 +719,8 @@ function OnboardingPage({ initialData, onStartOver }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (page !== 7) return; // Only submit on the last page
+
         setIsSubmitting(true);
         
         const dataToSend = new FormData();
@@ -737,12 +739,21 @@ function OnboardingPage({ initialData, onStartOver }) {
         });
 
         try {
-            await fetch('https://formspree.io/f/xrblozqr', {
+            const response = await fetch('https://formspree.io/f/xrblozqr', {
                 method: 'POST',
                 body: dataToSend,
                 headers: { 'Accept': 'application/json' }
             });
-            setIsSubmitted(true);
+
+            if (response.ok) {
+                 const stripeLink = formData.manageMessages 
+                    ? 'https://buy.stripe.com/7sY6oG5S5b2g8K36ix' 
+                    : 'https://buy.stripe.com/28EcN43JX5HW1hBgXb';
+                window.location.href = stripeLink;
+            } else {
+                throw new Error("Form submission failed");
+            }
+
         } catch (error) {
             console.error('Error submitting form:', error);
             alert('There was an error submitting your form. Please try again.');
@@ -758,27 +769,6 @@ function OnboardingPage({ initialData, onStartOver }) {
         return [];
     };
     
-    if (isSubmitted) {
-        return (
-            <div className="max-w-3xl mx-auto text-left py-12 animate-fade-in bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
-                <h2 className="text-2xl font-bold text-white mb-4">☑️ You have confirmed that the above information is accurate.</h2>
-                <h2 className="text-2xl font-bold text-white mb-6">☑️ You have authorized SEO Sentinel to request management access to your Google Business Profile.</h2>
-                
-                <h3 className="text-xl font-semibold text-blue-400 mb-3">📬 What’s Next?</h3>
-                <ul className="list-disc list-inside text-slate-300 space-y-2">
-                    <li>Keep an eye on your inbox – Google will send you a request to approve our access.</li>
-                    <li>We’ll begin setup within 24 hours and send your weekly post preview, review prompt, and optimization plan.</li>
-                    <li>You’ll also receive a QR code to make it easy to collect customer reviews.</li>
-                </ul>
-                <p className="text-slate-400 mt-6">If you need to update your info or have any questions, reply to this email or contact us at <a href="mailto:JasonPulzar@SeosentinelAI.com" className="text-blue-400 hover:underline">JasonPulzar@SeosentinelAI.com</a></p>
-                
-                <button onClick={onStartOver} className="mt-8 text-blue-400 hover:text-blue-300 transition-colors duration-300 font-semibold">
-                    &laquo; Back to Home
-                </button>
-            </div>
-        )
-    }
-
     return (
         <div className="max-w-3xl mx-auto">
             <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700">
@@ -952,7 +942,7 @@ function OnboardingPage({ initialData, onStartOver }) {
                                 disabled={isSubmitting}
                                 className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg ml-auto disabled:bg-green-800 disabled:cursor-not-allowed"
                             >
-                                {isSubmitting ? 'Processing...' : `Submit & Authorize`}
+                                {isSubmitting ? 'Processing...' : `Proceed to Payment ($${formData.manageMessages ? 40 : 30}/mo)`}
                             </button>
                         )}
                     </div>
@@ -1201,4 +1191,3 @@ function App() {
 }
 
 export default App;
-
