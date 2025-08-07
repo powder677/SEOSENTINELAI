@@ -717,51 +717,52 @@ function OnboardingPage({ initialData, onStartOver }) {
     const nextPage = () => setPage(p => p + 1);
     const prevPage = () => setPage(p => p - 1);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (page !== 7) return; // Only submit on the last page
-
-    setIsSubmitting(true);
-    
-    const dataToSend = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-        if (value instanceof FileList) {
-            for (let i = 0; i < value.length; i++) {
-                dataToSend.append(`${key}_${i}`, value[i]);
+const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (page !== 7) return; // Only submit on the last page
+        setIsSubmitting(true);
+        
+        const dataToSend = new FormData();
+        Object.entries(formData).forEach(([key, value]) => {
+            if (value instanceof FileList) {
+                for (let i = 0; i < value.length; i++) {
+                    dataToSend.append(`${key}_${i}`, value[i]);
+                }
+            } else if (Array.isArray(value)) {
+                dataToSend.append(key, value.join(', '));
+            } else if (typeof value === 'object' && value !== null) {
+                dataToSend.append(key, JSON.stringify(value));
+            } else {
+                dataToSend.append(key, value);
             }
-        } else if (Array.isArray(value)) {
-            dataToSend.append(key, value.join(', '));
-        } else if (typeof value === 'object' && value !== null) {
-            dataToSend.append(key, JSON.stringify(value));
-        } else {
-            dataToSend.append(key, value);
-        }
-    });
-
-    try {
-        // Submit form data to a backend service (optional - for lead tracking)
-        const response = await fetch('/api/submit-onboarding', {
-            method: 'POST',
-            body: dataToSend,
         });
 
-        if (response.ok) {
-            // Redirect to appropriate Stripe payment link
-            const stripeLink = formData.manageMessages 
-                ? 'https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h' 
-                : 'https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i';
-            
-            window.location.href = stripeLink;
-        } else {
-            throw new Error("Form submission failed");
-        }
+        try {
+            // Submit form data to a backend service (optional - for lead tracking)
+            const response = await fetch('/api/submit-onboarding', {
+                method: 'POST',
+                body: dataToSend,
+            });
 
-    } catch (error) {
-        console.error('Error submitting form:', error);
-        alert('There was an error submitting your form. Please try again.');
-        setIsSubmitting(false);
-    }
-};
+            if (response.ok) {
+                // Redirect to appropriate Stripe payment link
+                const stripeLink = formData.manageMessages 
+                    ? 'https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h' 
+                    : 'https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i';
+                
+                window.location.href = stripeLink;
+            } else {
+                throw new Error("Form submission failed");
+            }
+
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            alert('There was an error submitting your form. Please try again.');
+            setIsSubmitting(false);
+        }
+    }; // <- This closing brace was missing!
+    
+    const getCurrentServices = () => {
     
     const getCurrentServices = () => {
         const [category, type] = formData.businessType.split('.');
