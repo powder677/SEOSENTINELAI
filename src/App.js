@@ -717,7 +717,7 @@ function OnboardingPage({ initialData, onStartOver }) {
     const nextPage = () => setPage(p => p + 1);
     const prevPage = () => setPage(p => p - 1);
 
-   const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (page !== 7) return; // Only submit on the last page
 
@@ -739,13 +739,23 @@ function OnboardingPage({ initialData, onStartOver }) {
     });
 
     try {
-        // Direct redirect to Stripe payment link based on plan selection
-        const stripeLink = formData.manageMessages 
-            ? 'https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h' 
-            : 'https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i';
-        
-        window.location.href = stripeLink;
-        
+        // Submit form data to a backend service (optional - for lead tracking)
+        const response = await fetch('/api/submit-onboarding', {
+            method: 'POST',
+            body: dataToSend,
+        });
+
+        if (response.ok) {
+            // Redirect to appropriate Stripe payment link
+            const stripeLink = formData.manageMessages 
+                ? 'https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h' 
+                : 'https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i';
+            
+            window.location.href = stripeLink;
+        } else {
+            throw new Error("Form submission failed");
+        }
+
     } catch (error) {
         console.error('Error submitting form:', error);
         alert('There was an error submitting your form. Please try again.');
