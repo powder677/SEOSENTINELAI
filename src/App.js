@@ -739,14 +739,7 @@ function OnboardingPage({ initialData, onStartOver }) {
         });
 
         try {
-            const response = await fetch('https://formspree.io/f/xrblozqr', {
-                method: 'POST',
-                body: dataToSend,
-                headers: { 'Accept': 'application/json' }
-            });
-
-            if (response.ok) {
-                 const stripeLink = formData.manageMessages 
+            const stripeLink = formData.manageMessages 
                     ? 'https://buy.stripe.com/7sY6oG5S5b2g8K36ixbbG0h' 
                     : 'https://buy.stripe.com/28EcN43JX5HW1hBgXbbbG0i';
                 window.location.href = stripeLink;
