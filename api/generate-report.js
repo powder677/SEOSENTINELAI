@@ -1,211 +1,191 @@
-// Located at: /api/generate-report.js
-// Modified to use fewer form fields, adopt a more aggressive/urgent tone,
-// and return a new JSON structure for the frontend.
+// api/generate-report.js
+// This is a Node.js/Express API endpoint that generates SEO audit reports using Claude
 
-export default async function handler(req, res) {
-    // 1. --- Security and Method Check ---
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
-        return res.status(405).end(`Method ${req.method} Not Allowed`);
-    }
+const express = require('express');
+const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 
-    // 2. --- Get Data from Frontend ---
-    // Using only the 5 specified form fields.
-    const {
-        businessName,
-        businessType,
-        streetAddress,
-        location,
-        biggestChallenge
-    } = req.body;
-    console.log('Form data received:', { businessName, businessType, streetAddress, location, biggestChallenge }); // DEBUG
+const app = express();
 
-    // 3. --- Get Secure API Keys from Environment Variables ---
-    const geminiApiKey = process.env.GEMINI_API_KEY;
-    const placesApiKey = process.env.GOOGLE_PLACES_API_KEY;
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: '10mb' }));
 
-    if (!geminiApiKey || !placesApiKey) {
-        console.error("CRITICAL: API key environment variables are not set.");
-        return res.status(500).json({
-            error: "Server configuration error. API keys are missing."
-        });
-    }
+// Rate limiting - 5 requests per IP per hour
+const reportLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: {
+    error: 'Too many audit requests from this IP. Please try again in an hour.'
+  }
+});
 
-    try {
-        // --- 4. Get Competitor Data via Google Places API ---
-        let competitorDataForPrompt = "No competitor data could be retrieved. The AI should infer a realistic competitive landscape.";
-        let clientGmbData = null;
-        let businessFound = false;
+// Apply rate limiting to the report generation endpoint
+app.use('/api/generate-report', reportLimiter);
 
-        // --- Step 4a: Find the client's own GMB listing ---
-        // Combine street address and location for a more precise query.
-        const fullAddress = `${businessName}, ${streetAddress}, ${location}`;
-        const clientSearchUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(fullAddress)}&key=${placesApiKey}`;
-        console.log('Client search URL:', clientSearchUrl); // DEBUG
+// Claude API integration
+async function generateAuditReport(formData) {
+  const prompt = `You are an expert local SEO consultant with 20+ years of experience. Generate a comprehensive, personalized local SEO audit report for the following business.
 
-        const clientSearch = await fetch(clientSearchUrl).then(res => res.json());
-        console.log('Client search response:', clientSearch); // DEBUG
+BUSINESS INFORMATION:
+- Business Name: ${formData.businessName}
+- Business Type: ${formData.businessType || 'General Business'}
+- Street Address: ${formData.streetAddress}
+- Location: ${formData.location}
+- Email: ${formData.email}
+- Biggest Challenge: ${formData.biggestChallenge || 'getting_more_leads'}
 
-        if (clientSearch.status === 'OK' && clientSearch.results[0]) {
-            businessFound = true;
-            const clientPlaceId = clientSearch.results[0].place_id;
-            const clientDetailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${clientPlaceId}&fields=photo,rating,user_ratings_total,types&key=${placesApiKey}`;
-            const clientDetails = await fetch(clientDetailsUrl).then(res => res.json());
-            console.log('Client details response:', clientDetails); // DEBUG
+IMPORTANT INSTRUCTIONS:
+- Create realistic, specific scores and insights based on the business type and location
+- Make recommendations actionable and relevant to their industry
+- Include competitive analysis for their local market
+- Use professional, consultative tone
+- All scores should be between 35-85% to show room for improvement
+- Make the content feel personalized and valuable
 
-            if (clientDetails.status === 'OK' && clientDetails.result) {
-                clientGmbData = {
-                    rating: clientDetails.result.rating || 0,
-                    reviewCount: clientDetails.result.user_ratings_total || 0,
-                    photoCount: clientDetails.result.photos ? clientDetails.result.photos.length : 0,
-                    categories: clientDetails.result.types || [businessType],
-                };
-            }
-        }
-        console.log('Client GMB data:', clientGmbData); // DEBUG
-        console.log('Business Found:', businessFound); // DEBUG
+Respond with a JSON object in the following format:
 
-        // --- Step 4b: Find competitors (only if the client's business was found) ---
-        if (businessFound && clientGmbData) {
-            const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${placesApiKey}`;
-            const geocodeResponse = await fetch(geocodeUrl).then(res => res.json());
-
-            if (geocodeResponse.status === 'OK' && geocodeResponse.results[0]) {
-                const { lat, lng } = geocodeResponse.results[0].geometry.location;
-                
-                // Use a relevant category for the search, falling back to the user-provided type.
-                const searchCategory = clientGmbData.categories[0] || businessType;
-                const nearbyUrl = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=5000&keyword=${encodeURIComponent(searchCategory)}&type=${encodeURIComponent(searchCategory.replace(/_/g, ' '))}&key=${placesApiKey}`;
-                console.log('Nearby search URL:', nearbyUrl); // DEBUG
-
-                const nearbyResponse = await fetch(nearbyUrl).then(res => res.json());
-                if (nearbyResponse.status === 'OK' && nearbyResponse.results.length > 0) {
-                    const competitors = nearbyResponse.results
-                        .filter(place =>
-                            place.name.toLowerCase() !== businessName.toLowerCase() &&
-                            place.business_status === 'OPERATIONAL' &&
-                            place.user_ratings_total > 5 // Filter for established competitors
-                        )
-                        .sort((a, b) => b.user_ratings_total - a.user_ratings_total)
-                        .slice(0, 3);
-
-                    if (competitors.length > 0) {
-                        const competitorProfiles = competitors.map(comp => ({
-                            name: comp.name,
-                            rating: comp.rating || 0,
-                            reviews: comp.user_ratings_total || 0,
-                        }));
-                        
-                        // Format this data cleanly for the prompt
-                        competitorDataForPrompt = `
-                          Here is the competitive landscape analysis:
-                          - Client's Profile: ${JSON.stringify(clientGmbData)}
-                          - Top Competitors: ${JSON.stringify(competitorProfiles)}
-                        `;
-                    }
-                }
-            }
-        }
-
-        // 5. --- Construct the Enhanced Prompt for the AI ---
-        const prompt = `
-          You are a world-class, aggressive Local SEO strategist. Your goal is to create a powerful, data-driven audit that creates a strong sense of urgency for a local business owner. Be direct, find problems, and clearly connect them to lost revenue. Do not be generic or soft. Use strong, persuasive language and emojis.
-
-          Business Details:
-          - Business Name: ${businessName}
-          - Business Type: ${businessType}
-          - Address: ${streetAddress}, ${location}
-          - Biggest Challenge: "${biggestChallenge}"
-
-          Your Task:
-          Analyze the provided data and generate a JSON report. You MUST infer missing data to create a complete and impactful picture.
-          - If the business was not found on Google, this is a CRITICAL issue. Your report must reflect this severity. Create a realistic but urgent scenario of how much business they are losing.
-          - If the business was found, critically analyze its stats against inferred competitor averages. Find weaknesses.
-          - Estimate a realistic "Average Job Value" for this business type. This is crucial for the revenue impact calculation. For example, a plumber might be $300, a salon $80, a roofer $5000.
-          - Base your analysis on these 5 core local SEO pillars. Score each from 0-100 internally to determine the overall letter grade:
-            1.  Profile Completeness Score (0-100): Is every field filled out? Special hours, services, attributes?
-            2.  Photo Quantity & Quality Score (0-100): Do they have at least 20 high-quality, recent photos?
-            3.  Review Score & Recency Score (0-100): What's the average rating and how many recent (last 3 months) reviews do they have?
-            4.  Consistent Posting Score (0-100): Are they using Google Posts weekly?
-            5.  Local Keyword Optimization Score (0-100): Is the business name, description, and services optimized for local search terms?
-
-          Data for Analysis:
-          - Business Found on Google Places API: ${businessFound}
-          ${competitorDataForPrompt}
-
-          Generate a JSON object using this exact structure. Do not include any preamble, markdown, or code block syntax.
-
-          {
-            "business_found": ${businessFound},
-            "overall_score": "A single letter grade (A, B, C, D, or F) based on your internal scoring of the 5 pillars.",
-            "overall_explanation": "A punchy, one-sentence explanation for the score that creates urgency. Connect it to their biggest challenge.",
-            "profile_analysis": {
-              "title": "Your Profile Analysis",
-              "issues": [
-                { "problem": "A specific, critical problem found (e.g., 'Missing Key Business Information').", "impact": "The direct negative impact of this problem (e.g., 'Customers can't see your services, so they call a competitor who lists them.')." }
-              ]
-            },
-            "competitor_comparison": {
-              "title": "How You Stack Up",
-              "your_stats": { "rating": ${clientGmbData?.rating || 0}, "reviews": ${clientGmbData?.reviewCount || 0}, "photos": ${clientGmbData?.photoCount || 0} },
-              "competitor_averages": { "rating": "A realistic number (e.g., 4.8).", "reviews": "A realistic number (e.g., 150).", "advantage_areas": ["A list of 1-2 areas where competitors are winning, e.g., 'More Reviews', 'Better Photos'."] }
-            },
-            "optimization_plan": {
-              "title": "Your 3-Step Optimization Plan",
-              "priority_fixes": [
-                { "fix": "A high-impact, actionable fix (e.g., 'Add 10 Real Job Photos').", "why": "Why this fix is critical (e.g., 'Builds trust and shows the quality of your work instantly.').", "timeline": "Estimated time to complete (e.g., '1 Hour')." }
-              ]
-            },
-            "revenue_impact": {
-              "title": "Estimated Revenue Impact",
-              "monthly_lost_leads": "An estimated number of leads lost per month due to these issues.",
-              "avg_job_value": "Your inferred average job value for this business type."
-            }
-          }
-        `;
-
-        // 6. --- Call the Gemini API ---
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`;
-
-        const apiResponse = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                "generationConfig": {
-                    "responseMimeType": "application/json",
-                }
-            })
-        });
-
-        if (!apiResponse.ok) {
-            const errorBody = await apiResponse.text();
-            console.error("Gemini API Error:", errorBody);
-            throw new Error(`The AI service returned an error. Status: ${apiResponse.status}`);
-        }
-
-        const responseData = await apiResponse.json();
-        
-        // The response should be clean JSON because of responseMimeType
-        const rawText = responseData.candidates[0].content.parts[0].text;
-        
-        let reportJson;
-        try {
-            reportJson = JSON.parse(rawText);
-        } catch (parseError) {
-            console.error("Failed to parse JSON response from AI.");
-            console.error("Raw AI Response:", rawText);
-            throw new Error("The AI returned a response in an unexpected format.");
-        }
-
-        // 7. --- Send the Final Result Back to the Frontend ---
-        res.status(200).json(reportJson);
-
-    } catch (error) {
-        console.error('Full error details:', error.message);
-        res.status(500).json({
-            error: error.message || 'An unknown server error occurred.'
-        });
-    }
+{
+  "business_name": "Business Name",
+  "grade": "B-",
+  "summary_statement": "Brief 1-2 sentence summary of their current local SEO status",
+  "local_seo_score": "67",
+  "visibility_score": "72",
+  "reputation_score": "58",
+  "profile_analysis": "Detailed analysis of their Google Business Profile and local presence (3-4 paragraphs)",
+  "optimization_plan": "Specific, actionable recommendations for improvement (3-4 paragraphs with bullet points)",
+  "extra_insights": "Additional insights about their market, competitors, or opportunities (2-3 paragraphs)",
+  "competitors": [
+    {"name": "Competitor 1", "score": 78},
+    {"name": "Competitor 2", "score": 65},
+    {"name": "Competitor 3", "score": 82}
+  ]
 }
 
+DO NOT OUTPUT ANYTHING OTHER THAN VALID JSON. Your entire response must be a single, valid JSON object.`;
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 2000,
+        messages: [
+          { role: "user", content: prompt }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Claude API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    let responseText = data.content[0].text;
+    
+    // Clean up potential markdown formatting
+    responseText = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    
+    // Parse the JSON response
+    const auditData = JSON.parse(responseText);
+    
+    // Validate required fields
+    const requiredFields = ['business_name', 'grade', 'summary_statement', 'local_seo_score', 'visibility_score', 'reputation_score'];
+    for (const field of requiredFields) {
+      if (!auditData[field]) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
+
+    return auditData;
+    
+  } catch (error) {
+    console.error('Error generating audit report:', error);
+    throw new Error(`Failed to generate audit report: ${error.message}`);
+  }
+}
+
+// API endpoint for generating reports
+app.post('/api/generate-report', async (req, res) => {
+  try {
+    // Validate required fields
+    const { businessName, streetAddress, location, email } = req.body;
+    
+    if (!businessName || !streetAddress || !location || !email) {
+      return res.status(400).json({
+        error: 'Missing required fields. Please provide business name, street address, location, and email.'
+      });
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        error: 'Please provide a valid email address.'
+      });
+    }
+
+    console.log(`Generating audit report for: ${businessName} in ${location}`);
+
+    // Generate the audit report
+    const auditReport = await generateAuditReport(req.body);
+
+    // Log successful generation (without sensitive data)
+    console.log(`Successfully generated audit report for: ${businessName}`);
+
+    // Return the audit report
+    res.json(auditReport);
+
+  } catch (error) {
+    console.error('API Error:', error);
+    
+    // Return appropriate error response
+    if (error.message.includes('Claude API')) {
+      res.status(503).json({
+        error: 'Our audit system is temporarily unavailable. Please try again in a few minutes.'
+      });
+    } else if (error.message.includes('JSON')) {
+      res.status(500).json({
+        error: 'There was an issue processing your audit. Please try again.'
+      });
+    } else {
+      res.status(500).json({
+        error: 'An unexpected error occurred. Our team has been notified.'
+      });
+    }
+  }
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    service: 'SEO Audit Generator'
+  });
+});
+
+// Handle 404s for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({ 
+    error: 'Internal server error. Please try again later.' 
+  });
+});
+
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, () => {
+  console.log(`SEO Audit API server running on port ${PORT}`);
+  console.log(`Health check available at: http://localhost:${PORT}/api/health`);
+});
+
+module.exports = app;
